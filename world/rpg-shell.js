@@ -150,9 +150,40 @@
       app.appendChild(da);
       da.querySelector("[data-close]").addEventListener("click", closeDrawers);
     }
-    document.addEventListener("keydown", function (e) {
-      if (e.key === "Escape") closeDrawers();
-    });
+    if (!window.__wdRpgEscBound) {
+      window.__wdRpgEscBound = true;
+      document.addEventListener("keydown", function (e) {
+        if (e.key !== "Escape") return;
+        try {
+          var t = e.target;
+          if (t && (t.tagName === "INPUT" || t.tagName === "TEXTAREA" || t.tagName === "SELECT")) return;
+        } catch (eT) {}
+        // (1) Overlay Tas/Toko di atas segalanya: klik tombol tutupnya.
+        try {
+          var shop = document.querySelector(".wd-shop");
+          if (shop) {
+            var c = shop.querySelector("[data-close]");
+            if (c) c.click();
+            return;
+          }
+        } catch (eS) {}
+        // (2) Drawer seperti biasa; (3) desktop: pane Party/Dunia/Dewa -> Peta.
+        var anyOpen = false;
+        try {
+          anyOpen = ["wd-drawer-quest", "wd-drawer-journal", "wd-drawer-help", "wd-drawer-ach"].some(function (d) {
+            var el = $(d);
+            return !!(el && !el.hidden);
+          });
+        } catch (eD) {}
+        closeDrawers();
+        if (!anyOpen && isDesktopLayout()) {
+          try {
+            var pane = document.querySelector("#wd-pane-party:not([hidden]), #wd-pane-world:not([hidden]), #wd-pane-god:not([hidden])");
+            if (pane) navGo("adventure");
+          } catch (eP) {}
+        }
+      });
+    }
   }
 
   function clickSubTab(name) {
@@ -240,6 +271,34 @@
     var godOn = false;
     try { godOn = !!document.querySelector("#wd-subtabs [data-wtab='god']"); } catch (e) {}
     g.hidden = !godOn;
+  }
+  /* Kepala panel Party/Dunia/Dewa (desktop saja via CSS): judul + tombol ✕
+     -> navGo('adventure'). Idempotent: cek :scope > .wd-panel-head dulu,
+     jadi render ulang worldsim tidak membuat dobel. */
+  function syncPaneHeaders() {
+    var defs = [
+      ["wd-pane-party", "🧑 Party"],
+      ["wd-pane-world", "🌍 Dunia"],
+      ["wd-pane-god", "👑 Dewa"]
+    ];
+    defs.forEach(function (d) {
+      var pane = $(d[0]);
+      if (!pane) return;
+      if (pane.querySelector(":scope > .wd-panel-head")) return;
+      var h = document.createElement("div");
+      h.className = "wd-panel-head wd-drawer-head";
+      var s = document.createElement("span");
+      s.textContent = d[1];
+      var b = document.createElement("button");
+      b.type = "button";
+      b.setAttribute("data-panel-close", "");
+      b.setAttribute("aria-label", "Tutup");
+      b.textContent = "✕";
+      b.addEventListener("click", function () { navGo("adventure"); });
+      h.appendChild(s);
+      h.appendChild(b);
+      pane.insertBefore(h, pane.firstChild);
+    });
   }
   /* Sorotan sidebar mengikuti pane/drawer aktif (pengganti sub-tab yg disembunyikan). */
   function syncNavActive() {
@@ -674,14 +733,24 @@
       node.style.bottom = ""; // hapus offset bertingkat inline worldsim
       dock.appendChild(node);
       while (dock.children.length > 3) dock.removeChild(dock.firstChild);
-      // Dock tepat di bawah HUD (+8px); bila HUD tak ada/tak terlihat: 64px.
+      // Dock tepat di bawah baris tab Dialog/Jurnal (+8px) bila terlihat di
+      // bawah HUD; kalau tidak, bawah HUD +8px; kalau tidak ada keduanya: 64px.
       var top = 64;
       try {
+        var hudB = null;
         var hud = document.querySelector("#world-app.wd-rpg .wd-hud");
         if (hud) {
-          var b = hud.getBoundingClientRect();
-          if (b && b.height > 0 && b.bottom > 0 && b.bottom < window.innerHeight) top = Math.round(b.bottom + 8);
+          var hb = hud.getBoundingClientRect();
+          if (hb && hb.height > 0 && hb.bottom > 0 && hb.bottom < window.innerHeight) hudB = hb.bottom;
         }
+        var tabB = null;
+        var tabs = document.querySelector("#world-app.wd-rpg .wd-dlg-tabs");
+        if (tabs) {
+          var tb = tabs.getBoundingClientRect();
+          if (tb && tb.height > 0 && tb.bottom > 0 && tb.bottom < window.innerHeight) tabB = tb.bottom;
+        }
+        if (tabB !== null && (hudB === null || tabB >= hudB)) top = Math.round(tabB + 8);
+        else if (hudB !== null) top = Math.round(hudB + 8);
       } catch (eH) {}
       dock.style.top = top + "px";
     } catch (e) {}
@@ -827,6 +896,7 @@
       syncAchBtn();
       syncTitles();
       syncGodNavBtn();
+      syncPaneHeaders();
       syncNavActive();
       syncModePill();
     } finally {

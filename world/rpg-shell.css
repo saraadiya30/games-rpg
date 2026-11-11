@@ -703,6 +703,8 @@ body.wd-game-active #i2p-bnpop-scrim {
   padding: 0.6rem 0.7rem calc(1rem + env(safe-area-inset-bottom));
   box-shadow: 0 -18px 50px -12px rgba(0, 0, 0, 0.8);
 }
+/* Kepala panel Party/Dunia/Dewa (dibuat syncPaneHeaders) — mobile: disembunyikan. */
+.wd-panel-head { display: none; }
 #world-app.wd-rpg #wd-pane-party .wd-card,
 #world-app.wd-rpg #wd-pane-world .wd-card,
 #world-app.wd-rpg #wd-pane-god .wd-card {
@@ -731,6 +733,7 @@ body.wd-game-active #i2p-bnpop-scrim {
     flex-direction: row;
     --wd-nav-w: 96px;
     --wd-topbar-h: 56px;
+    --wd-panel-w: min(430px, 38vw);
   }
   #world-app.wd-rpg > #wd-subtabs {
     position: absolute;
@@ -949,7 +952,8 @@ body.wd-game-active #i2p-bnpop-scrim {
   #world-app.wd-rpg #wd-pane-world:not([hidden]),
   #world-app.wd-rpg #wd-pane-god:not([hidden]) {
     inset: var(--wd-topbar-h) 0 0 auto;
-    width: min(430px, 38vw);
+    width: var(--wd-panel-w);
+    box-sizing: border-box;
     border-top: 0;
     border-left: 2px solid var(--th-accent, #7c5cd6);
     border-radius: 0;
@@ -960,13 +964,63 @@ body.wd-game-active #i2p-bnpop-scrim {
     right: 0;
     bottom: 0;
     top: var(--wd-topbar-h);
-    width: min(430px, 38vw);
+    width: var(--wd-panel-w);
+    box-sizing: border-box;
     max-height: none;
     border-top: 0;
     border-left: 2px solid var(--th-accent, #7c5cd6);
     border-radius: 0;
   }
   .wd-drawer-scrim { left: var(--wd-nav-w); }
+  /* Satu keluarga: pane & drawer berbagi lebar, box, latar, dan bayangan. */
+  #world-app.wd-rpg #wd-pane-party:not([hidden]),
+  #world-app.wd-rpg #wd-pane-world:not([hidden]),
+  #world-app.wd-rpg #wd-pane-god:not([hidden]),
+  #world-app.wd-rpg .wd-drawer {
+    background: var(--th-modal, #161221);
+    box-shadow: 0 -18px 50px -12px rgba(0, 0, 0, 0.8);
+  }
+  /* Kepala panel: segaya .wd-drawer-head, sticky, selebar panel. */
+  #world-app.wd-rpg .wd-panel-head {
+    display: flex;
+    position: sticky;
+    top: -0.6rem;
+    z-index: 1;
+    margin: -0.6rem -0.7rem 0.6rem;
+    background: var(--th-modal, #161221);
+  }
+  /* Sub-tab Party jadi segmented control, selaras tab Dialog/Jurnal. */
+  #world-app.wd-rpg #wd-pane-party .wd-ptabs {
+    display: flex;
+    gap: 0;
+    margin: 0.55rem 0 0.6rem;
+    padding: 3px;
+    border: 1px solid var(--th-border, #3a3348);
+    border-radius: 8px;
+    background: var(--th-surface, #17121f);
+  }
+  #world-app.wd-rpg #wd-pane-party .wd-ptab {
+    flex: 1 1 0;
+    min-width: 0;
+    height: 40px;
+    min-height: 0;
+    margin: 0;
+    border: 0;
+    border-radius: 6px;
+    background: transparent;
+    opacity: 0.55;
+  }
+  #world-app.wd-rpg #wd-pane-party .wd-ptab.on {
+    background: var(--th-accent, #7c5cd6);
+    color: var(--th-accent-text, #fff);
+    border-color: transparent;
+    box-shadow: none;
+    opacity: 1;
+  }
+  #world-app.wd-rpg #wd-pane-party .wd-ptab:focus-visible {
+    outline: 2px solid var(--th-accent, #7c5cd6);
+    outline-offset: 2px;
+  }
   /* Dock toast desktop: kanan atas di bawah HUD, klik tembus. */
   #wd-toasts {
     display: flex;
