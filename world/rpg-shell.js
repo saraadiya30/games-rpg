@@ -277,29 +277,42 @@
     try { var W = getW(); if (W && W.mode === "god") return true; } catch (e2) {}
     return false;
   }
+  /* Segmented toggle Karakter/Dewa (shell): wadah #wd-modetoggle (role=group),
+     segmen [data-mode]. Klik segmen non-aktif = klik tombol worldsim + pindah pane.
+     Idempotent: elemen lama berbentuk <button> diganti sekali. */
   function syncModePill() {
     var app = worldApp();
     if (!app) return;
     var t = $("wd-modetoggle");
+    if (t && t.tagName !== "DIV") { try { t.remove(); } catch (eR) {} t = null; }
     if (!t) {
-      t = document.createElement("button");
+      t = document.createElement("div");
       t.id = "wd-modetoggle";
-      t.type = "button";
       t.className = "wd-modepill";
-      t.addEventListener("click", function () {
-        try {
-          var toGod = !isGodMode();
-          var b = document.querySelector('#wd-subtabs .wd-modepill button[data-wmode="' + (toGod ? "god" : "player") + '"]');
-          if (b) b.click();
-          // renderAll worldsim sinkron: bawa pane mengikuti mode (Adventure <-> Dewa).
-          var tab = document.querySelector('#wd-subtabs [data-wtab="' + (toGod ? "god" : "adventure") + '"]');
-          if (tab) tab.click();
-        } catch (e) {}
+      t.setAttribute("role", "group");
+      t.innerHTML = '<button type="button" data-mode="player">🧍 Karakter</button>' +
+        '<button type="button" data-mode="god">👑 Dewa</button>';
+      t.querySelectorAll("[data-mode]").forEach(function (s) {
+        s.addEventListener("click", function () {
+          try {
+            var m = s.getAttribute("data-mode");
+            if ((m === "god") === isGodMode()) return; // sudah aktif: diam
+            var b = document.querySelector('#wd-subtabs .wd-modepill button[data-wmode="' + m + '"]');
+            if (b) b.click();
+            // renderAll worldsim sinkron: bawa pane mengikuti mode (Adventure <-> Dewa).
+            var tab = document.querySelector('#wd-subtabs [data-wtab="' + (m === "god" ? "god" : "adventure") + '"]');
+            if (tab) tab.click();
+          } catch (e) {}
+        });
       });
       app.appendChild(t);
     }
-    var label = isGodMode() ? "👑 Dewa" : "🧍 Karakter";
-    if (t.textContent !== label) t.textContent = label;
+    var god = isGodMode();
+    t.querySelectorAll("[data-mode]").forEach(function (s) {
+      var on = (s.getAttribute("data-mode") === "god") === god;
+      if (on) s.classList.add("on"); else s.classList.remove("on");
+      s.setAttribute("aria-pressed", on ? "true" : "false");
+    });
   }
 
   /* ---------- 3. Saluran dialog / jurnal / battle ---------- */
@@ -697,6 +710,47 @@
     if (sub) html += "<span>" + esc(sub) + "</span>";
     if (title.innerHTML !== html) title.innerHTML = html;
   }
+  /* Info lokasi di bar atas (desktop): salin .wd-area-title, read-only. */
+  function syncTopInfo() {
+    var app = worldApp();
+    if (!app) return;
+    var t = $("wd-topinfo");
+    if (!t) {
+      t = document.createElement("div");
+      t.id = "wd-topinfo";
+      app.appendChild(t);
+    }
+    var src = document.querySelector("#wd-pane-adventure .wd-card > .wd-area-title");
+    var html = src ? src.innerHTML : "";
+    if (t.innerHTML !== html) t.innerHTML = html;
+    t.hidden = !html;
+  }
+  /* Baris tujuan di drawer Quest (desktop saja, mobile tidak berubah). */
+  var desktopMQ = null;
+  function isDesktopLayout() {
+    try {
+      if (!desktopMQ) desktopMQ = window.matchMedia("(min-width: 1020px), ((max-height: 560px) and (min-width: 600px))");
+      return !!desktopMQ.matches;
+    } catch (e) { return false; }
+  }
+  function syncQuestGoal() {
+    var drawer = $("wd-drawer-quest");
+    if (!drawer) return;
+    var body = drawer.querySelector(".wd-drawer-body");
+    if (!body) return;
+    var line = body.querySelector(":scope > .wd-goal-line");
+    if (!isDesktopLayout()) { if (line) line.remove(); return; }
+    var g = document.querySelector("#world-app.wd-rpg .wd-hud .wd-goal");
+    var txt = g ? String(g.textContent || "").trim() : "";
+    if (!txt) { if (line) line.remove(); return; }
+    if (!line) {
+      line = document.createElement("div");
+      line.className = "wd-goal-line";
+      body.insertBefore(line, body.firstChild);
+    }
+    var html = esc(txt);
+    if (line.innerHTML !== html) line.innerHTML = html;
+  }
 
   /* ---------- 5. Enhance utama (idempotent) ---------- */
   var enhancing = false, queued = false;
@@ -713,6 +767,8 @@
       syncNearbyButtons();
       syncToasts();
       syncAreaTitle();
+      syncTopInfo();
+      syncQuestGoal();
       renderJournalIfOpen();
       renderHelpIfOpen();
       renderAchIfOpen();
