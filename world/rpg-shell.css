@@ -730,6 +730,7 @@ body.wd-game-active #i2p-bnpop-scrim {
     top: 0;
     left: var(--wd-nav-w);
     right: 0;
+    z-index: 2;
     height: var(--wd-topbar-h);
     box-sizing: border-box;
     padding: calc(6px + env(safe-area-inset-top)) 0.5rem 6px 0.8rem;
