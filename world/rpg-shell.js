@@ -269,6 +269,39 @@
     });
   }
 
+  /* Toggle mode Karakter/Dewa (shell): 1 pill di kanan bar atas (desktop).
+     Klik diteruskan ke tombol worldsim yg disembunyikan CSS (tetap di DOM),
+     jadi logika mode worldsim tidak ditulis ulang. Idempotent. */
+  function isGodMode() {
+    try { if (document.querySelector("#wd-subtabs [data-wtab='god']")) return true; } catch (e) {}
+    try { var W = getW(); if (W && W.mode === "god") return true; } catch (e2) {}
+    return false;
+  }
+  function syncModePill() {
+    var app = worldApp();
+    if (!app) return;
+    var t = $("wd-modetoggle");
+    if (!t) {
+      t = document.createElement("button");
+      t.id = "wd-modetoggle";
+      t.type = "button";
+      t.className = "wd-modepill";
+      t.addEventListener("click", function () {
+        try {
+          var toGod = !isGodMode();
+          var b = document.querySelector('#wd-subtabs .wd-modepill button[data-wmode="' + (toGod ? "god" : "player") + '"]');
+          if (b) b.click();
+          // renderAll worldsim sinkron: bawa pane mengikuti mode (Adventure <-> Dewa).
+          var tab = document.querySelector('#wd-subtabs [data-wtab="' + (toGod ? "god" : "adventure") + '"]');
+          if (tab) tab.click();
+        } catch (e) {}
+      });
+      app.appendChild(t);
+    }
+    var label = isGodMode() ? "👑 Dewa" : "🧍 Karakter";
+    if (t.textContent !== label) t.textContent = label;
+  }
+
   /* ---------- 3. Saluran dialog / jurnal / battle ---------- */
   function ensureDlgTabs() {
     var adv = $("wd-pane-adventure");
@@ -687,6 +720,7 @@
       syncTitles();
       syncGodNavBtn();
       syncNavActive();
+      syncModePill();
     } finally {
       enhancing = false;
       if (queued) { queued = false; setTimeout(enhance, 60); }

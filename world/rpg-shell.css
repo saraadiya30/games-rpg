@@ -122,6 +122,8 @@ body.wd-game-active #i2p-bnpop-scrim {
   gap: 0.25rem;
 }
 #world-app.wd-rpg .wd-modepill .wd-mini { min-height: 32px; min-width: 36px; }
+/* Toggle mode shell (dibuat JS): sembunyi di mana-mana kecuali blok desktop. */
+#wd-modetoggle { display: none; }
 
 /* Judul area (dibuat JS, baca dari select/bar peta — tanpa ubah data) */
 .wd-area-title {
@@ -737,6 +739,28 @@ body.wd-game-active #i2p-bnpop-scrim {
   }
   /* Navigasi utama = sidebar: sub-tab disembunyikan visual, TETAP di DOM (clickSubTab). */
   #world-app.wd-rpg #wd-subtabs .wd-subtab[data-wtab] { display: none; }
+  /* Pill bawaan worldsim disembunyikan (tetap di DOM: klik shell diteruskan ke sini). */
+  #world-app.wd-rpg #wd-subtabs .wd-modepill { display: none; }
+  /* Toggle mode shell: 1 pill "Karakter/Dewa" di kanan bar atas. */
+  #world-app.wd-rpg > #wd-modetoggle {
+    display: flex;
+    align-items: center;
+    position: absolute;
+    top: 8px;
+    right: 12px;
+    z-index: 3;
+    height: 40px;
+    padding: 6px 12px;
+    border-radius: 6px;
+    font: inherit;
+    font-weight: 600;
+    background: var(--wd-topbar-bg, #1e1e24);
+    color: var(--wd-text, #e8e8e8);
+    border: 1px solid var(--wd-border, #333);
+    cursor: pointer;
+  }
+  #world-app.wd-rpg > #wd-modetoggle:hover,
+  #world-app.wd-rpg > #wd-modetoggle:active { background: var(--wd-accent, #3a3a4a); }
   #world-app.wd-rpg > #wd-menu {
     top: 8px;
     left: 12px;
