@@ -721,19 +721,34 @@ body.wd-game-active #i2p-bnpop-scrim {
 @media (min-width: 1020px), ((max-height: 560px) and (min-width: 600px)) {
   #world-app.wd-rpg {
     flex-direction: row;
+    --wd-nav-w: 96px;
+    --wd-topbar-h: 56px;
   }
   #world-app.wd-rpg > #wd-subtabs {
     position: absolute;
     top: 0;
-    left: 96px;
+    left: var(--wd-nav-w);
     right: 0;
+    height: var(--wd-topbar-h);
+    box-sizing: border-box;
+    padding: calc(6px + env(safe-area-inset-top)) 0.5rem 6px 0.8rem;
   }
-  #wd-menu { top: 12px; left: 12px; }
+  #world-app.wd-rpg > #wd-menu {
+    top: 8px;
+    left: 12px;
+    width: calc(var(--wd-nav-w) - 24px);
+    box-sizing: border-box;
+    padding-left: 0.25rem;
+    padding-right: 0.25rem;
+    text-align: center;
+    white-space: nowrap;
+  }
   .wd-rpg-nav {
     position: relative;
     flex-direction: column;
     justify-content: flex-start;
-    width: 96px;
+    box-sizing: border-box;
+    width: var(--wd-nav-w);
     left: auto;
     right: auto;
     bottom: auto;
@@ -746,7 +761,7 @@ body.wd-game-active #i2p-bnpop-scrim {
   .wd-rpg-nav button { flex: 0 0 auto; min-height: 64px; }
   #world-app.wd-rpg #wd-pane-adventure {
     flex: 1;
-    padding-top: 56px;
+    padding-top: var(--wd-topbar-h);
     flex-direction: row;
     gap: 0.7rem;
     padding-left: 0.7rem;
@@ -774,7 +789,7 @@ body.wd-game-active #i2p-bnpop-scrim {
   #world-app.wd-rpg #wd-pane-party:not([hidden]),
   #world-app.wd-rpg #wd-pane-world:not([hidden]),
   #world-app.wd-rpg #wd-pane-god:not([hidden]) {
-    inset: 56px 0 0 auto;
+    inset: var(--wd-topbar-h) 0 0 auto;
     width: min(430px, 38vw);
     border-top: 0;
     border-left: 2px solid var(--th-accent, #7c5cd6);
@@ -785,14 +800,14 @@ body.wd-game-active #i2p-bnpop-scrim {
     left: auto;
     right: 0;
     bottom: 0;
-    top: 56px;
+    top: var(--wd-topbar-h);
     width: min(430px, 38vw);
     max-height: none;
     border-top: 0;
     border-left: 2px solid var(--th-accent, #7c5cd6);
     border-radius: 0;
   }
-  .wd-drawer-scrim { left: 96px; }
+  .wd-drawer-scrim { left: var(--wd-nav-w); }
 }
 
 /* Layar pendek-lebar: ketatkan kolom kanan agar muat tanpa scroll kartu */
