@@ -171,8 +171,9 @@
         b.classList.toggle("on", b.getAttribute("data-nav") === kind);
       });
     } catch (e) {}
-    if (kind === "adventure") { closeDrawers(); clickSubTab("adventure"); return; }
-    if (kind === "party" || kind === "world") { closeDrawers(); clickSubTab(kind); return; }
+    if (kind === "adventure") { closeDrawers(); clickSubTab("adventure"); syncNavActive(); return; }
+    if (kind === "party" || kind === "world") { closeDrawers(); clickSubTab(kind); syncNavActive(); return; }
+    if (kind === "god") { closeDrawers(); clickSubTab("god"); syncNavActive(); return; }
     if (kind === "bag") {
       var inv = $("wd-invbtn");
       if (inv) inv.click();
@@ -182,10 +183,12 @@
           void bar;
         } catch (e) {}
       }
+      syncNavActive();
       return;
     }
-    if (kind === "quest") { openDrawer("wd-drawer-quest"); return; }
-    if (kind === "journal") { openDrawer("wd-drawer-journal"); renderJournal(); return; }
+    if (kind === "quest") { openDrawer("wd-drawer-quest"); syncNavActive(); return; }
+    if (kind === "journal") { openDrawer("wd-drawer-journal"); renderJournal(); syncNavActive(); return; }
+    syncNavActive();
   }
   function openDrawer(id) {
     var app = worldApp();
@@ -196,6 +199,7 @@
     });
     var scrim = app.querySelector(":scope > .wd-drawer-scrim");
     if (scrim) scrim.hidden = false;
+    syncNavActive();
     // Tutup pane party/world/god (kembali ke adventure) supaya tidak dobel
     // — tanpa ubah data, hanya klik subtab adventure bila drawer quest/jurnal dibuka
     // dari posisi party/world? Tidak: biarkan pane, drawer menimpa di atasnya.
@@ -212,6 +216,57 @@
       var nav = app && app.querySelector(".wd-rpg-nav");
       if (nav) nav.querySelectorAll("[data-nav]").forEach(function (b) { b.classList.remove("on"); });
     } catch (e) {}
+    syncNavActive();
+  }
+
+  /* Tombol sidebar Dewa: hanya tampil saat sub-tab god ada (= mode dewa).
+     Sub-tab disembunyikan visual di desktop tapi TETAP di DOM (lihat CSS),
+     jadi clickSubTab('god') tetap jalan. Idempotent: aman tiap render. */
+  function syncGodNavBtn() {
+    var app = worldApp();
+    if (!app) return;
+    var nav = app.querySelector(":scope > .wd-rpg-nav");
+    if (!nav) return;
+    var g = nav.querySelector("[data-nav='god']");
+    if (!g) {
+      g = document.createElement("button");
+      g.type = "button";
+      g.setAttribute("data-nav", "god");
+      g.innerHTML = "<span class='i'>👑</span><span>Dewa</span>";
+      g.hidden = true;
+      g.addEventListener("click", function () { navGo("god"); });
+      nav.appendChild(g);
+    }
+    var godOn = false;
+    try { godOn = !!document.querySelector("#wd-subtabs [data-wtab='god']"); } catch (e) {}
+    g.hidden = !godOn;
+  }
+  /* Sorotan sidebar mengikuti pane/drawer aktif (pengganti sub-tab yg disembunyikan). */
+  function syncNavActive() {
+    var app = worldApp();
+    if (!app) return;
+    var nav = app.querySelector(":scope > .wd-rpg-nav");
+    if (!nav) return;
+    var active = null;
+    var open = [];
+    ["wd-drawer-quest", "wd-drawer-journal", "wd-drawer-help", "wd-drawer-ach"].forEach(function (d) {
+      var el = $(d);
+      if (el && !el.hidden) open.push(d);
+    });
+    if (open.length) {
+      if (open.indexOf("wd-drawer-quest") !== -1) active = "quest";
+      else if (open.indexOf("wd-drawer-journal") !== -1) active = "journal";
+    } else {
+      var on = null;
+      try { on = document.querySelector("#wd-subtabs .wd-subtab.on[data-wtab]"); } catch (e) {}
+      if (on) {
+        var w = on.getAttribute("data-wtab");
+        if (w === "adventure" || w === "party" || w === "world" || w === "god") active = w;
+      }
+    }
+    nav.querySelectorAll("[data-nav]").forEach(function (b) {
+      b.classList.toggle("on", b.getAttribute("data-nav") === active);
+    });
   }
 
   /* ---------- 3. Saluran dialog / jurnal / battle ---------- */
@@ -630,6 +685,8 @@
       renderAchIfOpen();
       syncAchBtn();
       syncTitles();
+      syncGodNavBtn();
+      syncNavActive();
     } finally {
       enhancing = false;
       if (queued) { queued = false; setTimeout(enhance, 60); }
