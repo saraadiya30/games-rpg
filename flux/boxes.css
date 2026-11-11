@@ -1,0 +1,972 @@
+/* 📑 FANEBLADENE I DERES EGEN BOKS (brugerønske 2026-09-30: "adskil fanebladende fra det andet i en
+     box for sig selv"): tab-striben er flyttet UD af Description-boksens `.input-wrapper` og ned i
+     denne selvstændige boks, som ligger lige under Description-boksen (se `boot()` i tab-scriptet og
+     "fluxTabBox" i `TOP`-listen i den kanoniske rækkefølge-vagthund). Boksen får samme brønd-farve og
+     runde hjørner som de øvrige rækker i Description-rammen; den toppede, stiplede skillestreg var
+     kun nødvendig INDE i Description-boksen og er derfor slået fra her. */
+  #fluxTabBox {
+    position: relative;
+    margin: 0 0 var(--fx-gap);
+    padding: .1rem .4rem .14rem;
+    border-radius: var(--fx-radius-sm);
+    background: var(--fx-well);
+    text-align: left;
+  }
+#fluxTabBox > .tab-strip {
+    margin-top: 0;
+    border-top: 0;
+    padding-left: .8rem;
+    padding-right: .8rem;
+    box-sizing: border-box;
+  }
+/* 🖼️ Publish filter — panelet som 🐢 send-to-gallery åbner, så man kan lægge et filter på billedet
+     FØR det ryger i galleriet (og SE resultatet på billedet inden man sender). */
+  .flux-pf-overlay {
+    position: fixed;
+    inset: 0;
+    z-index: 2147483400;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 1rem;
+    box-sizing: border-box;
+    background: rgba(0, 0, 0, 0.55);
+    backdrop-filter: brightness(0.6);
+  }
+.flux-pf-panel {
+    width: min(580px, 96vw);
+    max-height: 92vh;
+    display: flex;
+    flex-direction: column;
+    overflow: hidden;
+    box-sizing: border-box;
+    padding: 0.8rem 0.9rem 0.7rem 0.9rem;
+    border: 1px solid rgba(128, 128, 128, 0.4);
+    border-radius: 10px;
+    background: light-dark(#fff, #1e1e1e);
+    color: light-dark(#111, #eee);
+    box-shadow: 0 12px 44px rgba(0, 0, 0, 0.55);
+    text-align: left;
+    font-size: 0.86rem;
+  }
+.flux-pf-head { flex: 0 0 auto; font-size: 0.95rem; font-weight: 700; margin-bottom: 0.3rem; }
+.flux-pf-note { flex: 0 0 auto; font-size: 0.78rem; opacity: 0.8; line-height: 1.35; margin-bottom: 0.55rem; }
+.flux-pf-stage { display: flex; gap: 0.7rem; align-items: flex-start; flex-wrap: wrap; flex: 1 1 auto; min-height: 0; overflow: auto; }
+.flux-pf-preview {
+    display: block;
+    width: 250px;
+    max-width: 62vw;
+    height: auto;
+    border-radius: 6px;
+    background: rgba(128, 128, 128, 0.2);
+    transition: opacity 0.15s;
+  }
+.flux-pf-preview.isBusy { opacity: 0.5; }
+.flux-pf-side { flex: 1 1 200px; min-width: 0; }
+.flux-pf-tip { font-size: 0.74rem; opacity: 0.75; margin-top: 0.45rem; min-height: 2.5em; line-height: 1.3; }
+.flux-pf-foot { flex: 0 0 auto; display: flex; justify-content: flex-end; gap: 0.4rem; margin-top: 0.7rem; }
+.flux-pf-btn {
+    font: inherit;
+    font-size: 0.8rem;
+    cursor: pointer;
+    padding: 0.3rem 0.8rem;
+    border: 1px solid rgba(128, 128, 128, 0.5);
+    border-radius: 999px;
+    background: transparent;
+    color: inherit;
+  }
+.flux-pf-btn:hover { background: rgba(122, 176, 255, 0.2); }
+.flux-pf-btn.primary { border-color: #4caf50; background: rgba(76, 175, 80, 0.3); font-weight: 700; }
+/* While a lightbox (an enlarged image, opened by clicking a thumbnail) is up, its own ✖️ close
+     button sits in the very same top-right corner as the floating 🙈/👁 toggle, and the toggle showed
+     through the lightbox's translucent backdrop — so it looked like it was covering the close button
+     (user report 2026-09-13). The toggle marks itself with data-flux-lb="1" while a lightbox is open
+     and is taken out of the picture until it closes. */
+  #fluxBtnsFab[data-flux-lb="1"] { display: none !important; }
+/* 🎉 Gushing Tails er nu sin EGEN, selvstændige boks i #fluxAutoFrame (brugerønske 2026-09-30:
+     "gushing tails skal være adskilt fra current prompt"). Den var før en gennemsigtig underside af
+     🎚️ Auto mixerens krop (kun en tynd skillestreg foroven), så den læste som en sektion af mixeren
+     og flød visuelt sammen med 📜 Current Prompt nedenunder. Nu er den et selvstændigt `.flux-mixer`-barn
+     af #fluxAutoFrame og får derfor HELT automatisk sin egen baggrund (`--fx-well`), sine egne runde
+     hjørner og sit eget mellemrum (rammens `gap: .4rem`) - præcis som mixeren og udlæseren. De tre
+     bokse står derfor klart adskilt. Kroppens visning følger dens EGEN `.open`-klasse via de generelle
+     `.flux-mixer`-regler; der er ingen indlejring mere. */
+  .prompt-frame > .flux-mixer {
+    /* Samme tynde haarstreg som .fxp-box/.flux-stdneg, så HELE Description-rammen er ens indrammet
+       (brugerønske 2026-09-26: "alle boxes ind i deers egen indramning" - de tre mixer-bokse manglede).
+       Uden den læste 🎚️ Auto mixer / 🎉 / 📜 som flade, uden kant, mens alle de øvrige bokse har en. */
+    box-shadow: inset 0 0 0 1px var(--fx-hairline);
+  }
+/* Fold ind/ud (brugerønske 2026-09-27): hele overskriften folder rækken - samme håndgribelige
+     gestus som 🏷️ Tags-boksene, 🎛️ Auto mixer og 🛠️ Construction (ingen separat pil). Folden huskes
+     pr. række. Selve "funktionen" (klik-fladen + værktøjstip) ligger INDE i boksen, i dens hoved. */
+  .flux-stdneg .sdn-head {
+    display: flex; flex-wrap: wrap; align-items: center; gap: .3rem;
+    cursor: pointer; user-select: none; -webkit-user-select: none;
+  }
+/* 📐 Fold-chevron i 🧬/🧩-rækkernes overskrift: samme cirkel+trekant som ALLE de øvrige bokse
+     (indsat af den generelle fold-knap-kode). Den står nu SIDST i overskriften (order:1 = yderst til
+     højre), præcis som på parameterboksene og ude i mixerne/prompt-boksene — før sad den yderst til
+     VENSTRE, hvilket var hele grunden til at fold-trekanterne ikke sad ens (brugerønske 2026-09-26).
+     Retningen styres af `.folded`, ligesom `.collapsed` styrer de øvrige bokse. */
+  .flux-stdneg > .sdn-head > .flux-fold-btn {
+    order: 1; margin: 0 0 0 .12rem; align-self: center;
+  }
+.flux-stdneg.folded > .sdn-head > .flux-fold-btn { opacity: .5; }
+/* ⏳ Age-rækkens overskrift har ingen "All on"-pille (den har i stedet alders-kroppen 👶🧑👴 inde i
+     selve rækken), så der er intet auto-margin at hænge chevronen på. Derfor skubbes dens tal ud til
+     højre her, så chevronen lander yderst til højre som på ALLE de andre overskrifter
+     (brugerønske 2026-09-26: fold-trekanterne skal sidde ens). */
+  #fluxAgeRow > .sdn-head > .sdn-count { margin-left: 0; }
+.flux-stdneg:not(.folded) > .sdn-head > .flux-fold-btn::before {
+    border-top: 3.7px solid currentColor !important;
+    border-left: 3.1px solid transparent !important;
+    border-right: 3.1px solid transparent !important;
+    border-bottom: 0 !important;
+  }
+.flux-stdneg .sdn-label { opacity: .72; white-space: nowrap; }
+/* Antallet af aktive blokke står ALTID i overskriften ("X/Y", brugerønske 2026-09-17), så man kan se
+     status uden at folde ud. */
+  .flux-stdneg .sdn-count { opacity: .6; font-size: .72rem; }
+/* Gul/amber tal = noget er kun DELVIST tændt. "X/Y ▣N" = X helt tændt, N delvist (gul), resten slukket. */
+  .flux-stdneg .sdn-count.sdn-part,
+  .sdn-catcnt.sdn-part { color: light-dark(#9a6a05, #f0c46a); opacity: .95; }
+/* Til/fra-knap for HELE standard-rækken (brugerønske 2026-09-17: "on/off knap på standard"): ét klik
+     tænder ALLE blokkene på én gang (kun de tags der IKKE allerede står i boksen bliver lagt ind) eller
+     slukker dem alle igen. Samme rød/gul/grøn-palet som chips'ene: rød = ingen aktive, gul = nogle,
+     grøn = alle. Teksten viser hvad et klik GØR ("All on"/"All off"), farven viser hvordan det står nu. */
+  .flux-stdneg .sdn-all {
+    margin-left: auto;
+    padding: .02rem .42rem;
+    border: 0; border-radius: 999px;
+    font: inherit; font-size: .64rem; font-weight: 700;
+    letter-spacing: .02em; line-height: 1.5;
+    cursor: pointer; white-space: nowrap;
+    display: inline-flex; align-items: center; justify-content: center;
+    min-width: 1.35rem; min-height: 1.05rem;
+    background: rgba(214, 76, 70, 0.14);
+    color: light-dark(#8f2b24, #f0b0aa);
+    box-shadow: inset 0 0 0 1px rgba(214, 76, 70, 0.45);
+    transition: background .15s, color .15s;
+  }
+.flux-stdneg .sdn-all:hover { filter: brightness(1.15); }
+.flux-stdneg .sdn-all.part {
+    background: rgba(226, 150, 60, 0.22);
+    color: light-dark(#7a4a10, #f2d0a0);
+    box-shadow: inset 0 0 0 1px rgba(226, 150, 60, 0.55);
+  }
+.flux-stdneg .sdn-all.on {
+    background: rgba(76, 175, 80, 0.28);
+    color: light-dark(#1e5c34, #bdecc9);
+    box-shadow: inset 0 0 0 1px rgba(76, 175, 80, 0.55);
+  }
+.flux-stdneg .sdn-all:not(.on):not(.fx-age-auto), .flux-stdneg .sdn-catall:not(.on) { min-width: 0; width: 1.1rem; height: 1.1rem; padding: 0; }
+.flux-stdneg .sdn-reset {
+    margin-left: .3rem;
+    padding: .02rem .42rem;
+    border: 0; border-radius: 999px;
+    font: inherit; font-size: .64rem; font-weight: 700;
+    line-height: 1.5; cursor: pointer; white-space: nowrap;
+    display: inline-flex; align-items: center; justify-content: center;
+    min-width: 1.35rem; min-height: 1.05rem;
+    background: var(--fx-well, rgba(127,127,127,.12));
+    color: inherit; opacity: .55;
+    box-shadow: inset 0 0 0 1px rgba(128,128,128,.3);
+  }
+.flux-stdneg .sdn-reset:hover { filter: brightness(1.12); opacity: .9; }
+.flux-stdneg .sdn-reset.on { opacity: 1; background: rgba(220,38,38,.16); color: light-dark(#8f2b24,#f0b0aa); box-shadow: inset 0 0 0 1px rgba(220,38,38,.5); }
+.flux-stdneg .sdn-body { display: flex; flex-wrap: wrap; align-items: center; gap: .3rem; }
+/* Fold ind/ud SKAL vinde over den grupperede krop nedenfor (samme specificitet, senere regel) —
+     derfor både den grupperede variant og et ID-ramt fallback pr. række, så rækken ALTID kan foldes
+     helt sammen, uanset hvor mange kategorier der er under den. */
+  .flux-stdneg.folded .sdn-body,
+  .flux-stdneg.folded .sdn-body.sdn-grouped,
+  #fluxStdPosRow.folded > .sdn-body,
+  #fluxStdNegRow.folded > .sdn-body { display: none; }
+/* 🧬 "Motherboard"-kategorier (brugerønske): 🧬 Standard positive er sorteret i General · Skin ·
+     Hair · Eyes · Face · Muscles · Body · Age. Hver kategori er en fuld bredde-blok med sin egen
+     lille overskrift (klik på overskriften = fold kategorien ind/ud) og sin egen All on-knap. */
+  .flux-stdneg .sdn-body.sdn-grouped { display: flex; flex-direction: column; align-items: stretch; gap: .34rem; }
+/* 🧬 Standard NEGATIVE som 20 ENKELTKASSER (brugeronske 2026-10-04: de 4 paraplyer er pillet
+     ud - hvert af de 20 moduler er sin egen kasse, 5 pr raekke). Et klik pa kassen toggler hele
+     modulet direkte (ingen dropdown, ingen dobbelt-titel); kassen farves gron/gul/rod efter
+     samme regel som chippene. Pos-raekken beholder stablede fuldbredde-blokke (saetnings-chippene
+     vil have bredden).
+     Fold-reglerne (folded + cat-folded) er bevidst staerkere end griddet, sa indfoldning ALTID vinder. */
+  #fluxStdNegRow .sdn-body.sdn-grouped,
+  #fluxStdPosRow .sdn-body.sdn-grouped { display: grid; grid-template-columns: repeat(auto-fill, minmax(190px, 1fr)); gap: .4rem; align-items: start; }
+#fluxStdNegRow .sdn-body.sdn-grouped { grid-template-columns: repeat(4, minmax(0, 1fr)); }
+/* REMOVED 2026-10-04 (user request): neg boxes stay neutral like pos — only the pill shows state. */
+  #fluxStdNegRow.folded > .sdn-body.sdn-grouped,
+  #fluxStdPosRow.folded > .sdn-body.sdn-grouped { display: none; }
+#fluxStdNegRow .sdn-cat,
+  #fluxStdPosRow .sdn-cat {
+    background: var(--fx-well, rgba(127,127,127,.07));
+    box-shadow: inset 0 0 0 1px var(--fx-hairline, rgba(127,127,127,.25));
+    border-radius: 8px; padding: .35rem .4rem .4rem; min-width: 0;
+  }
+#fluxStdNegRow .sdn-cat > .sdn-cats,
+  #fluxStdPosRow .sdn-cat > .sdn-cats { display: none; }
+#fluxDrop[data-cat] .sdn-cats { display: flex; flex-direction: column; align-items: flex-start; gap: .3rem; }
+#fluxDrop[data-cat] .sdn-chip { text-align: left; }
+/* Menuen er aldrig bredere end kassen (brugerønske): lange piller ombryder i stedet for at
+     skubbe menuen ud over kanterne — gælder både neg- og pos-menuer (samme delte #fluxDrop). */
+  #fluxDrop .sdn-chip { white-space: normal; max-width: 100%; }
+.sdn-cat { display: flex; flex-direction: column; gap: .22rem; min-width: 0; }
+.sdn-cathead {
+    display: flex; flex-wrap: wrap; align-items: center; gap: .34rem;
+    padding: .04rem .2rem; border-radius: 4px;
+    cursor: pointer; user-select: none; -webkit-user-select: none;
+  }
+.sdn-cathead:hover { background: var(--fx-btn, rgba(127,127,127,.08)); }
+#fluxStdPosRow .sdn-cat[data-cat="general"] > .sdn-cathead > .sdn-carett,
+  #fluxStdPosRow .sdn-cat[data-cat="quality"] > .sdn-cathead > .sdn-carett,
+  #fluxStdPosRow .sdn-cat[data-cat="ultraHd"] > .sdn-cathead > .sdn-carett,
+  #fluxStdPosRow .sdn-cat[data-cat="natural"] > .sdn-cathead > .sdn-carett,
+  #fluxStdPosRow .sdn-cat[data-cat="realistic"] > .sdn-cathead > .sdn-carett,
+  #fluxStdPosRow .sdn-cat[data-cat="sents"] > .sdn-cathead > .sdn-carett { order: 1; }
+#fluxStdPosRow .sdn-cathead,
+  #fluxStdNegRow .sdn-cathead { position: relative; padding-right: 1.35rem; }
+#fluxStdPosRow .sdn-cathead > .sdn-carett,
+  #fluxStdNegRow .sdn-cathead > .sdn-carett { display: none; }
+#fluxStdPosRow .sdn-cathead > .flux-fold-btn,
+  #fluxStdNegRow .sdn-cathead > .flux-fold-btn { position: absolute; right: 0; top: .1rem; }
+.sdn-cat.cat-open > .sdn-cathead > .flux-fold-btn::before {
+    border-top: 3.7px solid currentColor !important;
+    border-left: 3.1px solid transparent !important;
+    border-right: 3.1px solid transparent !important;
+    border-bottom: 0 !important;
+  }
+.sdn-catlab { font-size: .76rem; font-weight: 400; opacity: .72; white-space: nowrap; }
+.sdn-catcnt { font-size: .68rem; opacity: .5; }
+.sdn-carett { font-size: .6rem; opacity: .55; width: .7rem; text-align: center; display: inline-block; }
+.sdn-catall {
+    margin-left: auto;
+    padding: .02rem .42rem; border: 0; border-radius: 999px;
+    font: inherit; font-size: .64rem; font-weight: 700; letter-spacing: .02em;
+    line-height: 1.5; cursor: pointer; white-space: nowrap;
+    display: inline-flex; align-items: center; justify-content: center;
+    min-width: 1.35rem; min-height: 1.05rem;
+    background: rgba(214, 76, 70, 0.14);
+    color: light-dark(#8f2b24, #f0b0aa);
+    box-shadow: inset 0 0 0 1px rgba(214, 76, 70, 0.45);
+    transition: background .15s, color .15s;
+  }
+.sdn-catall:hover { filter: brightness(1.15); }
+.sdn-catall.part {
+    background: rgba(226, 150, 60, 0.22);
+    color: light-dark(#7a4a10, #f2d0a0);
+    box-shadow: inset 0 0 0 1px rgba(226, 150, 60, 0.55);
+  }
+.sdn-catall.on {
+    background: rgba(76, 175, 80, 0.28);
+    color: light-dark(#1e5c34, #bdecc9);
+    box-shadow: inset 0 0 0 1px rgba(76, 175, 80, 0.55);
+  }
+.sdn-cats { display: flex; flex-wrap: wrap; align-items: center; gap: .3rem; min-width: 0; }
+.sdn-cat.cat-folded > .sdn-cats { display: none; }
+/* ⚠️ Konflikt-varsel: vist som en gul bjælke over chip-rækken når man tænder et negativt ord der
+     kæmper mod den valgte stil (eller Gender & age guard mod Age/Gender). Blokerer INTET. */
+  .sdn-warnbox { display: flex; flex-direction: column; gap: .25rem; margin: .3rem 0 0; }
+.sdn-warnbox:empty { display: none; }
+.sdn-warn {
+    display: flex; align-items: flex-start; gap: .45rem; text-align: left;
+    font-size: .72rem; line-height: 1.35; padding: .38rem .55rem; border-radius: 6px;
+    background: rgba(226,166,42,.15); border: 1px solid rgba(226,166,42,.5);
+  }
+.sdn-warn .sdn-warn-x {
+    margin-left: auto; flex: 0 0 auto; cursor: pointer; background: none; border: 0;
+    color: inherit; opacity: .65; font-size: .8rem; line-height: 1; padding: 0 .15rem;
+  }
+.sdn-warn .sdn-warn-x:hover { opacity: 1; }
+/* 🧍 Body & face — "motherboard" af PARAMETRE (brugerønske): et responsivt grid (X kolonner, så
+     mange rækker som der er plads til) af multi-select-dropdowns. Man kan vælge FLERE ord pr.
+     parameter uden at de slår hinanden fra, og de bygges til én naturlig frase, fx
+     "a broad prominent sharply defined jawline" eller "wide hips with saddlebags". Hver parameter
+     skriver ÉN slot i Description-boksen, så de øvrige parametre og brugerens egen tekst er urørt. */
+  .fxp-box {
+    min-width: 0;
+    padding: .28rem .5rem;
+    border-radius: var(--fx-radius-sm);
+    font-size: .76rem; line-height: 1.25;
+    text-align: left;
+    color: light-dark(#3a3a3a, #c8c8c8);
+    background: var(--fx-well);
+    /* 📐 EGEN INDRAMNING (brugerønske 2026-09-26: "alle boxes ind i deres egen indramning"):
+       hver parameter/tag-boks får sin EGEN tynde hairline-ring, præcis som kontrol-båndene
+       (.ctrl-group), så alle bokse i Description-rammen læser som selvstændige bokse. */
+    box-shadow: inset 0 0 0 1px var(--fx-hairline);
+  }
+.fxp-box .fxp-head {
+    display: flex; flex-wrap: wrap; align-items: center; gap: .34rem;
+    cursor: pointer; user-select: none; -webkit-user-select: none;
+  }
+/* 📐 ENS FOLD-CHEVRON (brugerønske 2026-09-26): parameterboksene bar før en bar, grå trekant
+     (.fxp-car) yderst til VENSTRE, mens mixerne/Tags/Standard-rækkerne/prompt-boksene havde en
+     indkredset chevron yderst til HØJRE — derfor så fold-knapperne forskellige ud og sad forskelligt.
+     Nu bærer .fxp-car PRÆCIS samme runde cirkel+trekant som .flux-fold-btn, og den er flyttet til
+     samme plads som de øvrige (order:1 = sidst i overskriften, yderst til højre). Selve klik-fladen
+     er uændret HELE overskriften, og teksten (▸/▾) skjules med font-size:0 — trekanten tegnes af
+     ::before, ligesom på alle de andre bokse. */
+  .fxp-box .fxp-car {
+    box-sizing: border-box;
+    flex: 0 0 auto; order: 1;
+    width: .95rem; height: .95rem; min-width: .95rem;
+    border-radius: 50%; border: 1px solid var(--fx-fold-btn-color);
+    color: var(--fx-fold-btn-color);
+    font-size: 0; line-height: 0;
+    display: inline-flex; align-items: center; justify-content: center;
+    opacity: .5;
+  }
+.fxp-box .fxp-car::before {
+    content: ""; display: block; width: 0; height: 0;
+    border-top: 3.1px solid transparent;
+    border-bottom: 3.1px solid transparent;
+    border-left: 3.7px solid currentColor;
+  }
+.fxp-box:not(.folded) .fxp-car::before {
+    border-top: 3.7px solid currentColor;
+    border-left: 3.1px solid transparent;
+    border-right: 3.1px solid transparent;
+    border-bottom: 0;
+  }
+.fxp-box:hover .fxp-car,
+  .fxp-box .fxp-head:hover .fxp-car { opacity: .95; }
+.fxp-box .fxp-label { opacity: .72; white-space: nowrap; }
+.fxp-box .fxp-count { opacity: .6; font-size: .72rem; }
+/* Gul/amber = noget er kun DELVIST tændt (samme regel som 🧬-standardrækkerne). */
+  .fxp-box .fxp-count.fxp-part { color: light-dark(#9a6a05, #f0c46a); opacity: .95; }
+.fxp-box .fxp-clear {
+    margin-left: auto;
+    padding: .02rem .42rem; border: 0; border-radius: 999px;
+    font: inherit; font-size: .64rem; font-weight: 700; letter-spacing: .02em;
+    line-height: 1.5; cursor: pointer; white-space: nowrap;
+    display: inline-flex; align-items: center; justify-content: center;
+    min-width: 1.5rem; min-height: 1.05rem; text-align: center;
+    background: rgba(214, 76, 70, 0.14);
+    color: light-dark(#8f2b24, #f0b0aa);
+    box-shadow: inset 0 0 0 1px rgba(214, 76, 70, 0.45);
+  }
+/* 🟢 "Clear all"-pille (brugerønske 2026-09-29): tom + rød når intet er slået til,
+     grøn med et tal (antal aktive) når noget er slået til; hover-tip = "clear all". */
+  .fxp-box .fxp-clear.on {
+    background: rgba(76, 175, 80, 0.28);
+    color: light-dark(#1e5c34, #bdecc9);
+    box-shadow: inset 0 0 0 1px rgba(76, 175, 80, 0.55);
+  }
+.fxp-box .fxp-clear:hover { filter: brightness(1.15); }
+.fxp-box.folded .fxp-body { display: none; }
+.fxp-box .fxp-body { margin-top: .3rem; }
+.fxp-box .fxp-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(min(178px, 100%), 1fr));
+    gap: .32rem;
+  }
+.fxp-box .fxp-param { display: flex; flex-direction: row; align-items: stretch; gap: .22rem; min-width: 0; }
+/* 🔽 Menu-pilen på underoverskrifterne er FJERNET (brugerønske 2026-10-04: rækken åbner menuen
+     ved tryk på selve overskriften). Klik virker uændret, kun symbolet er væk. */
+  .fxp-box .fxp-car2 { display: none; }
+.fxp-box .fxp-trig { flex: 1 1 auto; min-width: 0; }
+/* 🔘 All on/off pr. kategori (brugerønske 2026-09-29 + oval 2026-10-02): OVAL pille som
+     .sdn-catall (grøn = alt tændt, gul = delvist, rød/grå = slukket) til højre for hver kategori-række. */
+  .fxp-box .fxp-all {
+    flex: 0 0 auto;
+    display: inline-flex; align-items: center; justify-content: center;
+    min-width: 1.35rem; min-height: 1.05rem; padding: .02rem .42rem; border: 0; border-radius: 999px;
+    font: inherit; font-size: .64rem; font-weight: 700; line-height: 1.5; cursor: pointer; white-space: nowrap;
+    background: rgba(214, 76, 70, 0.14);
+    color: light-dark(#8f2b24, #f0b0aa);
+    box-shadow: inset 0 0 0 1px rgba(214, 76, 70, 0.45);
+  }
+.fxp-box .fxp-all:hover { filter: brightness(1.15); }
+.fxp-box .fxp-all.on { background: rgba(76, 175, 80, 0.28); color: light-dark(#1e5c34, #bdecc9); box-shadow: inset 0 0 0 1px rgba(76, 175, 80, 0.55); }
+.fxp-box .fxp-all.part { background: rgba(226, 150, 60, 0.22); color: light-dark(#7a4a10, #f2d0a0); box-shadow: inset 0 0 0 1px rgba(226, 150, 60, 0.55); }
+/* ↺ Reset pr. underkategori (brugerønske 2026-10-01): samme plads som All-knappen, men fjerner
+     kun den rækkes egne ord. Grå = intet at nulstille, rødlig = rækken har noget tændt. */
+  .fxp-box .fxp-catreset {
+    flex: 0 0 auto;
+    display: inline-flex; align-items: center; justify-content: center;
+    width: 1.55rem; padding: 0; border: 0; border-radius: 6px;
+    font: inherit; font-size: .8rem; line-height: 1; cursor: pointer;
+    background: var(--fx-well); color: inherit; opacity: .5;
+    box-shadow: inset 0 0 0 1px rgba(128, 128, 128, 0.28);
+  }
+.fxp-box .fxp-all:not(.on) { min-width: 0; width: 1.1rem; height: 1.1rem; padding: 0; }
+.fxp-box .fxp-catreset:hover { filter: brightness(1.12); opacity: .85; }
+.fxp-box .fxp-catreset.on { opacity: 1; background: rgba(220, 38, 38, 0.18); box-shadow: inset 0 0 0 1px rgba(220, 38, 38, 0.55); }
+#descFrame > :not(.fxp-box) { grid-column: 1 / -1; }
+#descTopFrame > .input-ctn,
+  #descTopFrame > #fluxTabBox { grid-column: 1 / -1; }
+/* ── 📐 Parameter-rammen (brugerønske 2026-10-14): 📕 Boxes-baren + ALLE parameterboksene i SIN
+     EGEN ramme — samme 5-spors-gitter som #descFrame, så foldede bokse står 5 på række præcis som
+     før. Tilbage i #descFrame ligger kun #fluxAutoFrame. */
+  #paramFrame {
+    display: grid;
+    grid-template-columns: repeat(4, minmax(0, 1fr));
+    align-content: start;
+    gap: 0.4rem;
+  }
+#paramFrame > :not(.fxp-box) { grid-column: 1 / -1; }
+#descFrame > .fxp-box, #paramFrame > .fxp-box { grid-column: 1 / -1; margin: 0; }
+#descFrame > .fxp-box, #paramFrame > .fxp-box.folded { grid-column: span 1; }
+#descFrame > .fxp-box, #paramFrame > .fxp-box .fxp-head { min-width: 0; }
+/* Foldet boks = ÉN linje: chevron + titel. nowrap + en voksende titel betyder at titlen klippes
+     med "…" (og chevronen bliver hængende yderst til højre), i stedet for at status-tallet blev
+     skubbet ned på sin egen linje. Status-tallet hører til den ÅBNE boks; er der noget tændt, dukker
+     den grønne "Clear all"-pille op af sig selv, så boksen kan ses/nulstilles uden at åbnes. */
+  #descFrame > .fxp-box, #paramFrame > .fxp-box.folded .fxp-head { flex-wrap: nowrap; }
+#descFrame > .fxp-box, #paramFrame > .fxp-box.folded .fxp-label { flex: 1 1 auto; overflow: hidden; text-overflow: ellipsis; }
+#descFrame > .fxp-box, #paramFrame > .fxp-box.folded .fxp-count { display: none; }
+#descFrame > .fxp-box, #paramFrame > .fxp-box.folded .fxp-clear:not(.on) { display: none; }
+#paramFrame > .fxp-box .fxp-head { flex-wrap: nowrap; }
+#paramFrame > .fxp-box .fxp-label { flex: 1 1 auto; min-width: 0; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+#paramFrame > .fxp-box.folded:not(#fluxColorBox) .fxp-clear:not(.on) { display: inline-flex; visibility: hidden; }
+#paramFrame > #fluxFoldBar { grid-row: 1; }
+/* ⏳ Age er øverste indholdslinje i Boxes (brugerønske 2026-10-09) — fuld bredde. */
+  #paramFrame > #fluxAgeRow { grid-row: 2; grid-column: 1 / -1; }
+#paramFrame > .fxp-box { grid-column: span 1; }
+#paramFrame > #fluxParamBox { grid-row: 3; grid-column: 1; }
+#paramFrame > #fluxFaceBox { grid-row: 3; grid-column: 2; }
+#paramFrame > #fluxHairTagBox { grid-row: 3; grid-column: 3; }
+#paramFrame > #fluxSkinBox { grid-row: 3; grid-column: 4; }
+#paramFrame > #fluxBodyTagBox { grid-row: 4; grid-column: 1; }
+#paramFrame > #fluxFaceTagBox { grid-row: 4; grid-column: 2; }
+#paramFrame > #fluxHairstyleBox { grid-row: 4; grid-column: 3; }
+#paramFrame > #fluxSkinTagBox { grid-row: 4; grid-column: 4; }
+/* 👁️ Eyes lige under Face-sporet (brugerønske 2026-10-04: øjen-tingene samlet ved Face). */
+  #paramFrame > #fluxEyesBox { grid-row: 5; grid-column: 2; }
+#paramFrame > #fluxFaceBox { grid-row: 3; grid-column: 2; }
+#paramFrame > #fluxHairTagBox { grid-row: 4; grid-column: 1; }
+#paramFrame > #fluxSkinBox { grid-row: 4; grid-column: 2; }
+#paramFrame > #fluxBodyTagBox { grid-row: 5; grid-column: 1; }
+#paramFrame > #fluxFaceTagBox { grid-row: 5; grid-column: 2; }
+#paramFrame > #fluxHairstyleBox { grid-row: 6; grid-column: 1; }
+#paramFrame > #fluxSkinTagBox { grid-row: 6; grid-column: 2; }
+#paramFrame > #fluxEyesBox { grid-row: 7; grid-column: 1; }
+#stdPosFrame > .flux-topbox > .sdn-head, #stdNegFrame > .flux-topbox > .sdn-head,
+  #stdPosFrame > .flux-topbox > .ftb-head, #stdNegFrame > .flux-topbox > .ftb-head,
+  #stdPosFrame > .flux-topbox > .fmx-head, #stdNegFrame > .flux-topbox > .fmx-head {
+    flex-wrap: nowrap; gap: .2rem; font-size: .72rem; min-width: 0;
+  }
+#stdPosFrame > .flux-topbox > .sdn-head > .sdn-label, #stdNegFrame > .flux-topbox > .sdn-head > .sdn-label,
+  #stdPosFrame > .flux-topbox > .ftb-head > .ftb-title, #stdNegFrame > .flux-topbox > .ftb-head > .ftb-title,
+  #stdPosFrame > .flux-topbox > .fmx-head > .fmx-title, #stdNegFrame > .flux-topbox > .fmx-head > .fmx-title {
+    flex: 1 1 auto; min-width: 0; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+  }
+#stdPosFrame > .flux-topbox > .sdn-head > .sdn-count, #stdNegFrame > .flux-topbox > .sdn-head > .sdn-count {
+    white-space: nowrap; opacity: .85;
+  }
+#stdPosFrame > .flux-topbox > .sdn-head:hover > .flux-fold-btn, #stdNegFrame > .flux-topbox > .sdn-head:hover > .flux-fold-btn,
+  #stdPosFrame > .flux-topbox > .ftb-head:hover > .flux-fold-btn, #stdNegFrame > .flux-topbox > .ftb-head:hover > .flux-fold-btn,
+  #stdPosFrame > .flux-topbox > .fmx-head:hover > .flux-fold-btn, #stdNegFrame > .flux-topbox > .fmx-head:hover > .flux-fold-btn { opacity: 1; }
+/* ▸/▾ FOLD-ALLE-KONTAKT over parametermotherboardet: ÉN bog-knap (📕/📖) folder ALLE
+     parameterbokse ind/ud i ét klik, så gitteret kan skrumpe/åbnes. Bogen viser RESULTATET:
+     📕 = lukkede bokse (klik for at lukke), 📖 = åbne bokse (klik for at åbne). Tallet er antal
+     TÆNDTE bokse (grøn > 0, rød = 0). Bjælken er et gitterbarn der spænder over hele bredden
+     (den er IKKE en .fxp-box) og har sin egen indre brønd-boks, så den læses som sin egen ramme. */
+  #paramFrame > .flux-foldbar {
+    display: flex; align-items: center; gap: .4rem;
+    padding: .28rem .5rem;
+    font-size: .72rem; line-height: 1.4;
+    border-radius: var(--fx-radius-sm);
+    background: var(--fx-well);
+    cursor: pointer; user-select: none; -webkit-user-select: none;
+  }
+#paramFrame > .flux-foldbar:hover { filter: brightness(1.3); background: var(--fx-btn); }
+/* Seed/seeds/tabs lyser op ved hover som Boxes-bjælken (brugerønske 2026-10-05) */
+  #descTopFrame .seed-row:hover, #fluxTabBox:hover, #mixerRow:hover, .seed-row .cfg-half:hover { filter: brightness(1.3); }
+#paramFrame .ffb-fold::before {
+    content: ""; display: block; width: 0; height: 0;
+    border-top: 3.7px solid currentColor;
+    border-left: 3.1px solid transparent;
+    border-right: 3.1px solid transparent;
+    border-bottom: 0;
+  }
+#paramFrame.flux-frame-folded .ffb-fold::before {
+    border-top: 3.1px solid transparent;
+    border-bottom: 3.1px solid transparent;
+    border-left: 3.7px solid currentColor;
+    border-right: 0;
+  }
+#paramFrame > .flux-foldbar > .ffb-fold.flux-fold-btn::before {
+    border-top: 3.7px solid currentColor !important;
+    border-left: 3.1px solid transparent !important;
+    border-right: 3.1px solid transparent !important;
+    border-bottom: 0 !important;
+  }
+#paramFrame.flux-frame-folded > .flux-foldbar > .ffb-fold.flux-fold-btn::before {
+    border-top: 3.1px solid transparent !important;
+    border-bottom: 3.1px solid transparent !important;
+    border-left: 3.7px solid currentColor !important;
+    border-right: 0 !important;
+  }
+/* 📕 Rammen-fold (brugerønske 2026-09-30): fold-knappen ved siden af tallet gemmer SELVE
+     #paramFrame (alle boksene), så kun bjælken står tilbage. Husket i localStorage.
+     ⏳ Age er MED (brugerønske: den gemmes når Construction foldes sammen). */
+  #paramFrame.flux-frame-folded > .fxp-box,
+  #paramFrame.flux-frame-folded > #fluxAgeRow { display: none; }
+#ageFrame > #fluxAgeRow { grid-column: 1 / -1; }
+#fluxAgeRow:not(.folded) > .sdn-head > .sdn-count { display: none; }
+.fxp-box .fxp-allck { display: block; }
+.fxp-box .fxp-trig {
+    display: flex; align-items: center; gap: .3rem;
+    width: 100%; box-sizing: border-box;
+    padding: .14rem .42rem;
+    border: 0; border-radius: 6px;
+    font: inherit; font-size: .72rem; line-height: 1.4;
+    text-align: left; cursor: pointer;
+    overflow: hidden; white-space: nowrap;
+    background: var(--fx-well); color: inherit;
+    box-shadow: inset 0 0 0 1px rgba(128, 128, 128, 0.28);
+  }
+.fxp-box .fxp-trig:hover { filter: brightness(1.1); }
+.fxp-box .fxp-trig.has {
+    background: rgba(76, 175, 80, 0.16);
+    box-shadow: inset 0 0 0 1px rgba(76, 175, 80, 0.6);
+  }
+.fxp-box .fxp-name { font-weight: 600; opacity: .85; }
+.fxp-box .fxp-preview {
+    margin-left: auto; min-width: 0;
+    font-size: .68rem; opacity: .62;
+    overflow: hidden; text-overflow: ellipsis; white-space: nowrap;
+  }
+.fxp-box .fxp-trig.has .fxp-preview { color: light-dark(#1e5c34, #bdecc9); opacity: .95; }
+.fxp-box .fxp-trig.has .fxp-preview.fxp-part { color: light-dark(#9a6a05, #f0c46a); opacity: .95; }
+/* 🖱️ Fælles hover-tip (brugerønske 2026-09-24): række-previewet er klippet med "..." så man
+     kan ikke læse de flere ord der står. Tippen viser den FULDE tekst for den række man holder
+     musen over — og på boks-overskriften alt hvad boksen har skrevet ind i prompten. */
+  .fxp-hover {
+    position: fixed; z-index: 2147483600; pointer-events: none;
+    max-width: min(440px, 92vw); max-height: min(60vh, 440px); overflow: hidden;
+    padding: .42rem .58rem; border-radius: 8px;
+    background: light-dark(#ffffff, #1b1f24);
+    color: light-dark(#232323, #e8e8e8);
+    box-shadow: 0 8px 26px rgba(0, 0, 0, 0.38);
+    font-size: .72rem; line-height: 1.35; text-align: left;
+    opacity: 0; transform: translateY(2px);
+    transition: opacity .09s ease, transform .09s ease;
+  }
+.fxp-hover.on { opacity: 1; transform: translateY(0); }
+.fxp-hover .fxp-hover-name { display: block; font-weight: 700; opacity: .8; margin-bottom: .2rem; }
+.fxp-hover .fxp-hover-body { display: block; white-space: pre-wrap; word-break: break-word; }
+.fxp-hover .fxp-hover-more { display: block; opacity: .6; margin-top: .2rem; }
+.fxp-box .fxp-car2 { flex: 0 0 auto; opacity: .5; font-size: .6rem; }
+/* Den fælles multi-select-popover. FORANKRET (brugerønske 2026-10-01): ligger IKKE i <body>
+     mere, men flyttes ved åbning ind i sin triggers .fxp-param og positioneres med ren CSS
+     (top:100% = lige under triggeren) — aldrig JS-flyttet, så den kan ikke hoppe/bounce. */
+  .fxp-box .fxp-param { position: relative; }
+.fxp-box .fxp-pop {
+    top: calc(100% + 4px); left: 0; right: auto; min-width: 100%; }
+.fxp-box .fxp-pop.align-right { left: auto; right: 0; }
+.fxp-pop {
+    position: absolute; z-index: 2147483500; display: none;
+    min-width: 200px; max-width: min(320px, 92vw);
+    max-height: min(60vh, 420px); overflow: auto;
+    padding: .3rem; border-radius: 8px;
+    background: light-dark(#ffffff, #232528);
+    color: light-dark(#17181a, #ededef);
+    border: 1px solid rgba(128, 128, 128, 0.5);
+    box-shadow: 0 6px 22px rgba(0, 0, 0, 0.32);
+    font-size: .74rem; text-align: left;
+  }
+.fxp-pop.open { display: block; }
+.fxp-pop .fxp-opth {
+    opacity: .55; font-size: .64rem; text-transform: uppercase; letter-spacing: .04em;
+    margin: .1rem .2rem;
+  }
+.fxp-pop .fxp-opt {
+    display: flex; align-items: center; gap: .4rem;
+    width: 100%; box-sizing: border-box;
+    padding: .16rem .3rem; border: 0; border-radius: 5px;
+    background: transparent; color: inherit; font: inherit;
+    text-align: left; cursor: pointer;
+  }
+.fxp-pop .fxp-opt:hover { background: rgba(127, 127, 127, 0.16); }
+.fxp-pop .fxp-opt.on { background: rgba(76, 175, 80, 0.2); }
+.fxp-pop .fxp-chk { flex: 0 0 1rem; width: 1rem; text-align: center; opacity: .7; }
+.fxp-pop .fxp-opt.on .fxp-chk { opacity: 1; }
+/* Halvt-om-om (amber): nogle af emnets tags står i boksen, men ikke alle. */
+  .fxp-pop .fxp-opt.part { background: rgba(224, 158, 20, 0.2); }
+.fxp-pop .fxp-opt.part .fxp-chk { opacity: 1; color: light-dark(#9a6a05, #f0c46a); }
+/* 🧴/🧍 tag-bokse (dropdown med flueben, brugerønske 2026-09-29): kategori-navnene er længere end
+     parameter-navnene, så de får lidt bredere kolonner og ellipse i stedet for at blive klippet. */
+  #fluxSkinTagBox .fxp-grid, #fluxBodyTagBox .fxp-grid { grid-template-columns: repeat(auto-fill, minmax(min(206px, 100%), 1fr)); }
+#fluxSkinTagBox .fxp-name, #fluxBodyTagBox .fxp-name { overflow: hidden; text-overflow: ellipsis; }
+/* ⏳ Age (brugerønske 2026-09-29): "Auto" er default. Slider 0-100 + talfelt OG ét dropdown med
+     alle alders-trin (child … undead). Værdien skrives i Description som "N years of age" (IKKE
+     "years old" - ordet "old" får modellen til at tegne en gammel person). Slider/tal og dropdown
+     deler ÉT slot. Rækken kan foldes (chevronen virker), og folden huskes. */
+  #fluxAgeRow .sdn-head { cursor: pointer; flex-wrap: nowrap; row-gap: 0; gap: .45rem; }
+/* Kompakt én-linjes strip (brugerønske 2026-10-15: rammen fyldte 3 linjer uden grund):
+     label + Auto + slider + tal + 3 dropdowns + status + chevron på SAMME linje.
+     Status trunkeres med … i stedet for at fylde sin egen linje. Wrapper kun på smalle skærme. */
+  #fluxAgeRow .fx-age-body { display: inline-flex; align-items: center; gap: .4rem; flex-wrap: nowrap; flex: 1 1 auto; min-width: 0; }
+#fluxAgeRow.folded .fx-age-body { display: none; }
+#fluxAgeRow .fx-age-wrap { display: flex; align-items: center; gap: .4rem; flex: 0 1 auto; min-width: 0; }
+#fluxAgeRow .fx-age-range { width: 120px; flex: 1 1 90px; min-width: 60px; accent-color: #4caf50; }
+#fluxAgeRow.auto .fx-age-range,
+  #fluxAgeRow.auto .fx-age-num { opacity: .45; }
+#fluxAgeRow .sdn-all.fx-age-auto { margin-left: 0; }
+#fluxAgeRow .fx-age-num {
+    width: 3.4rem; box-sizing: border-box;
+    padding: .1rem .3rem; border-radius: 5px;
+    font: inherit; font-size: .74rem; text-align: right;
+    border: 1px solid rgba(128,128,128,.45);
+    background: rgba(128,128,128,.08);
+    color: light-dark(#17181a, #f2f2f2);
+  }
+#fluxAgeRow .fx-age-select {
+    max-width: 11rem; min-width: 4.5rem; flex: 1 1 auto;
+    padding: .12rem .3rem; border-radius: 5px;
+    font: inherit; font-size: .74rem;
+    border: 1px solid rgba(128,128,128,.45);
+    background: rgba(128,128,128,.08);
+    color: light-dark(#3a3a3a, #c8c8c8);
+  }
+#fluxAgeRow .fx-age-select option {
+    background-color: light-dark(#ffffff, #232528);
+    color: light-dark(#17181a, #ededef);
+    font-style: normal;
+  }
+#fluxAgeRow > .sdn-head > .sdn-count { white-space: nowrap; opacity: .85; margin-left: 0; flex: 0 1 auto; min-width: 0; overflow: hidden; text-overflow: ellipsis; }
+#fluxAgeRow .fx-age-body { flex: 1 1 100%; flex-wrap: wrap; }
+#fluxAgeRow > .sdn-head > .sdn-count { margin-left: 0; }
+/* Off = RED, on = GREEN (user request 2026-09-10): a standard block reads at a glance — red means
+     "not active", green means "active". Applies to both the negative and positive rows. */
+  .flux-stdneg .sdn-chip {
+    padding: .12rem .45rem;
+    border: 0; border-radius: 999px;
+    font: inherit; line-height: 1.3;
+    cursor: pointer;
+    background: rgba(214, 76, 70, 0.16);
+    color: light-dark(#8f2b24, #f0b0aa);
+    box-shadow: inset 0 0 0 1px rgba(214, 76, 70, 0.5);
+    opacity: .9; white-space: nowrap;
+    transition: opacity .15s, background .15s;
+  }
+.flux-stdneg .sdn-chip:hover { opacity: 1; background: rgba(214, 76, 70, 0.28); }
+.flux-stdneg .sdn-chip.on {
+    /* NB: ingen font-weight her! Bold ændrede chippens bredde, så nabo-chippene "hoppede" (bruger 2026-09-24).
+       Vægt-illusionen laves med en mikro text-shadow, som ikke rører layoutet. */
+    opacity: 1;
+    text-shadow: 0 0 0.35px currentColor;
+    background: rgba(76, 175, 80, 0.3);
+    color: light-dark(#1e5c34, #bdecc9);
+    box-shadow: inset 0 0 0 1px rgba(76, 175, 80, 0.6);
+  }
+.flux-stdneg .sdn-chip.sdn-flash { background: rgba(76, 175, 80, 0.55); color: #fff; opacity: 1; }
+/* AMBER = "part" (user request 2026-09-27): only SOME of the block's tags are in the box — e.g.
+     because the auto fine-tune already wrote them, or because the user edited one word by hand. The
+     chip must not lie "off" while the block is (partly) there, and a click completes it. */
+  .flux-stdneg .sdn-chip.part,
+  .flux-stdpos .sdn-chip.part {
+    opacity: 1;
+    background: rgba(226, 150, 60, 0.24);
+    color: light-dark(#7a4a10, #f2d0a0);
+    box-shadow: inset 0 0 0 1px rgba(226, 150, 60, 0.6);
+  }
+/* 🧬 Standard positive: the same chip row. */
+  .flux-stdpos .sdn-chip.on {
+    background: rgba(76, 175, 80, 0.3);
+    color: light-dark(#1e5c34, #bdecc9);
+    box-shadow: inset 0 0 0 1px rgba(76, 175, 80, 0.6);
+  }
+#sdnHoverTip {
+    position: fixed;
+    z-index: 9999;
+    max-width: min(22rem, calc(100vw - 1rem));
+    padding: .45rem .6rem;
+    border-radius: 8px;
+    border: 1px solid rgba(128, 128, 128, 0.45);
+    background: light-dark(#ffffff, #262626);
+    color: inherit;
+    font-size: .74rem;
+    line-height: 1.35;
+    pointer-events: none;
+    opacity: 0;
+    transition: opacity .12s;
+  }
+#sdnHoverTip.on { opacity: 1; }
+#sdnHoverTip .sdn-tip-note {
+    display: block;
+    font-style: italic;
+    opacity: .8;
+    margin-bottom: .25rem;
+  }
+#sdnHoverTip .sdn-tip-word { display: block; }
+#sdnHoverTip .sdn-tip-word.on { color: light-dark(#1e5c34, #bdecc9); }
+#sdnHoverTip .sdn-tip-status {
+    display: block;
+    opacity: .65;
+    margin-top: .25rem;
+  }
+/* 🧩 Own Words — samme chip-række, men til brugerens EGNE gemte ord/fraser (en personlig ordbank i
+     localStorage). Et chip lægger/fjerner PRÆCIS sin tekst i Description-boksen; resten af prompten
+     røres ikke. Den blå ✏️-knap gør rækken visuelt forskellig fra de faste 🧬-moduler.
+     Den blå RAMME er fjernet igen (brugerønske 2026-09-30: "fjern de indre rammer … gør det samme
+     oppe i description sektionen") - rækken er en række i den fælles Description-ramme, ikke sin
+     egen boks. */
+  .flux-mine .sdn-all { margin-left: .3rem; }
+.flux-mine .sdn-edit {
+    margin-left: auto;
+    opacity: .72;
+    padding: .1rem .5rem;
+    border: 0; border-radius: 999px;
+    font: inherit; font-size: .68rem; font-weight: 700;
+    letter-spacing: .03em; line-height: 1.5;
+    cursor: pointer; white-space: nowrap;
+    background: rgba(128, 128, 128, 0.14);
+    color: inherit;
+    box-shadow: inset 0 0 0 1px rgba(128, 128, 128, 0.45);
+    transition: filter .15s;
+  }
+.flux-mine .sdn-edit:hover { filter: brightness(1.15); }
+/* 🧩 Mine ord: hvert chip får sin EGEN ✕, så et enkelt ord kan slettes fra ordbanken (før skulle
+     man ind i ✏️-editoren). ✕ er altid synlig, så den også kan rammes på touch. */
+  .flux-mine .sdn-chip-wrap { display: inline-flex; align-items: center; gap: .16rem; }
+/* Samme ✕ (og chip-wrap) bruges nu også på ⭐ egne standarder i 🧬/🗣️-rækkerne, så stilen er
+     gjort generisk herunder (den .flux-mine-scoped regel ovenfor er uændret og vinder stadig). */
+  .sdn-chip-wrap { display: inline-flex; align-items: center; gap: .16rem; }
+.sdn-chip-x {
+    padding: 0 .34rem;
+    border: 0; border-radius: 999px;
+    font: inherit; font-size: .68rem; line-height: 1.45;
+    cursor: pointer; white-space: nowrap;
+    background: rgba(214, 76, 70, 0.18);
+    color: light-dark(#8f2b24, #f0b0aa);
+    box-shadow: inset 0 0 0 1px rgba(214, 76, 70, 0.5);
+    transition: filter .15s;
+  }
+.sdn-chip-x:hover { filter: brightness(1.2); }
+/* Lillesøster-toast når et ord gemmes som standard / slettes fra egne standarder. */
+  #fluxPromoteToast {
+    position: fixed; left: 50%; bottom: 22px;
+    transform: translateX(-50%) translateY(10px);
+    z-index: 100001; pointer-events: none;
+    padding: .45rem .85rem; border-radius: 999px;
+    background: light-dark(#1f1f24, #f0f0f2);
+    color: light-dark(#f0f0f2, #1f1f24);
+    font-size: .76rem; opacity: 0;
+    transition: opacity .18s, transform .18s;
+    box-shadow: 0 8px 22px rgba(0,0,0,.35);
+  }
+#fluxPromoteToast.show { opacity: 1; transform: translateX(-50%) translateY(0); }
+.flux-mine .sdn-chip-x {
+    padding: 0 .34rem;
+    border: 0; border-radius: 999px;
+    font: inherit; font-size: .68rem; line-height: 1.45;
+    cursor: pointer; white-space: nowrap;
+    background: rgba(214, 76, 70, 0.18);
+    color: light-dark(#8f2b24, #f0b0aa);
+    box-shadow: inset 0 0 0 1px rgba(214, 76, 70, 0.5);
+    transition: filter .15s;
+  }
+.flux-mine .sdn-chip-x:hover { filter: brightness(1.2); }
+/* 🧩 Own Words: ★ på hvert chip gemmer ordet/frasen som en FAST standard - enten som et
+     🧬 Standard positive-ord eller som en 🗣️ sætning. Det flytter ordet UD af Own Words og ind i
+     den valgte række (brugerønske 2026-09-29). Grøn = "gør permanent". */
+  .flux-mine .sdn-chip-star {
+    padding: 0 .34rem;
+    border: 0; border-radius: 999px;
+    font: inherit; font-size: .68rem; line-height: 1.45;
+    cursor: pointer; white-space: nowrap;
+    background: rgba(76, 175, 80, 0.18);
+    color: light-dark(#1e5c34, #bdecc9);
+    box-shadow: inset 0 0 0 1px rgba(76, 175, 80, 0.5);
+    transition: filter .15s;
+  }
+.flux-mine .sdn-chip-star:hover { filter: brightness(1.18); }
+/* Den lille menu ★ åbner (to valg: 🧬 Standard positive / 🗣️ Sentence). Fast positioneret, så
+     den ikke afhænger af rækkens overflow. */
+  .flux-promote-menu {
+    position: fixed; z-index: 100000;
+    display: flex; flex-direction: column; gap: .12rem;
+    min-width: 11rem; padding: .3rem;
+    border-radius: 8px;
+    background: light-dark(#ffffff, #2b2b30);
+    box-shadow: 0 8px 26px rgba(0,0,0,.4), inset 0 0 0 1px var(--fx-hairline);
+    font-size: .74rem; text-align: left;
+  }
+.flux-promote-menu .fpm-hd {
+    opacity: .55; font-size: .66rem; padding: .1rem .45rem .22rem;
+    max-width: 15rem; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;
+  }
+.flux-promote-menu button {
+    border: 0; border-radius: 6px; cursor: pointer;
+    background: transparent; color: inherit; text-align: left;
+    padding: .34rem .45rem; font: inherit; white-space: nowrap;
+  }
+.flux-promote-menu button:hover { background: var(--fx-btn-hover); }
+/* ➕/➖ POLARITETS-FARVER (brugerønske 2026-09-26: "alle + der hører til positive/+ tags og
+     kontroller være grønne og alle -'er der hører til negative \"vil ikke have\" ting være røde").
+     Gælder tilføj-feltet + knappen: 🧩 Own Words (positiv) er GRØN, den negative ordbank er RØD med
+     et minus. Slet-✕ og ↺-pillerne er røde i forvejen, ★ (gør et ord permanent) er grøn i forvejen,
+     og 🎚️ Style mixerens "+ prompt:" / "− negative:"-labels er farvet efter samme regel. */
+  .flux-mine .sdn-addwrap { display: inline-flex; align-items: center; gap: .2rem; }
+.flux-mine .sdn-addinput {
+    width: 8.5rem; max-width: 40vw; box-sizing: border-box;
+    padding: .1rem .45rem; border-radius: 999px;
+    font: inherit; font-size: .68rem; line-height: 1.45;
+    border: 1px dashed rgba(76, 175, 80, 0.55);
+    background: light-dark(#ffffff, #26282b); color: inherit;
+  }
+.flux-mine .sdn-addinput:focus {
+    outline: none; border-style: solid;
+    box-shadow: 0 0 0 1px rgba(76, 175, 80, 0.5);
+  }
+.flux-mine .sdn-addbtn {
+    padding: 0 .42rem; border: 0; border-radius: 999px;
+    font: inherit; font-size: .68rem; font-weight: 700; line-height: 1.45;
+    cursor: pointer; white-space: nowrap;
+    background: rgba(76, 175, 80, 0.18);
+    color: light-dark(#1e5c34, #bdecc9);
+    box-shadow: inset 0 0 0 1px rgba(76, 175, 80, 0.55);
+    transition: filter .15s;
+  }
+.flux-mine .sdn-addbtn:hover { filter: brightness(1.15); }
+/* ➖ Den NEGATIVE ordbank (🧩 Own Words −): rødt minus på tilføj-knappen og rød stiplet kant på
+     feltet. Det røde minus FORAN titlen er fjernet (brugerønske 2026-09-30) — rækken HEDDER nu
+     "Own Words −", så et ekstra minus ville give "− Own Words −". */
+  .flux-mine-neg .sdn-addinput { border-color: rgba(214, 76, 70, 0.55); }
+.flux-mine-neg .sdn-addinput:focus { box-shadow: 0 0 0 1px rgba(214, 76, 70, 0.5); }
+.flux-mine-neg .sdn-addbtn {
+    background: rgba(214, 76, 70, 0.18);
+    color: light-dark(#8f2b24, #f0b0aa);
+    box-shadow: inset 0 0 0 1px rgba(214, 76, 70, 0.55);
+  }
+/* 🧬 Standard-rækken står nu ALENE i sin ramme og fylder hele bredden: 🏷️ "Tags +" / "Tags −"
+     flyttede ned i 🎚️ Auto mixer (brugerønske 2026-09-27) - den 2-kolonne-ramme de før delte findes
+     ikke længere, så rækken må ikke længere klemmes ind i en halv kolonne. */
+  .prompt-frame > #fluxStdPosRow,
+  .prompt-frame > #fluxSkinBox,
+  .prompt-frame > #fluxSkinTagBox,
+  .prompt-frame > #fluxParamBox,
+  .prompt-frame > #fluxBodyTagBox,
+  .prompt-frame > #fluxAgeRow,
+  .prompt-frame > #fluxStdNegRow,
+  .prompt-frame > #fluxNegMineRow,
+  .prompt-frame > .fxp-box {
+    min-width: 0;
+    margin: 0 0 0.4rem;
+  }
+/* 🧩 Own Words + 🎚️ Auto mixer bor nu i toppen af Description-rammen (brugerønske 2026-09-29:
+     "my words op under description … flyt automixer op under own words"). Auto mixer-rammen
+     (#fluxAutoFrame) er derfor et BARN af #descFrame og skal IKKE tegne endnu en kasse ovenpå
+     mixerens egen "brønd". Dens flex-basis må heller ikke være 100%: i en kolonne betyder det
+     HØJDE, ikke bredde (samme fælde som .top-row/.flux-mixer - se noterne der). Indholdet er
+     uændret; kun rammen omkring det er slukket. */
+  #descFrame > #fluxAutoFrame {
+    flex: 0 0 auto;
+    background: transparent;
+    box-shadow: none;
+    padding: 0;
+    /* ⬍ LIGE AFSTAND (brugerønske 2026-09-26: "få lige afstand imellem automixer og current prompt"):
+       rammen havde gap: 0, så 🎚️ Auto mixer og 📜 Current Prompt stod klods op ad hinanden. Nu er der
+       præcis samme 0.4rem-luft mellem ALLE rammens bokse som inde i dem og ned til 🧩 Own Words. */
+    gap: .4rem;
+  }
+/* 🧩 Own Words skal læse som den første række under Description-feltet: en smule luft ned til
+     🎚️ Auto mixer, så de to ikke smelter sammen. */
+  #fluxMineRow, #fluxNegMineRow { margin: 0 0 .4rem; }
+/* 🧩 Træk-og-slip i de to ordbanker: chip'ene kan trækkes rundt for at ændre ordenen. */
+  .flux-mine .sdn-chip-wrap { cursor: grab; }
+.flux-mine .sdn-chip-wrap.sdn-dragging { opacity: .45; }
+.flux-mine .sdn-chip-wrap.sdn-dragging .sdn-chip { cursor: grabbing; }
+/* 🗣️ Sætningerne (batch 113, nu kategorien `sents` i 🧬 Standard) er hele sætninger, ikke
+     tags: de må GERNE ombryde (den fælles .sdn-chip-regel siger `white-space: nowrap`, hvilket
+     ville gøre en sætning til én meget bred pille og skubbe rækken ud over kanten), og de læses
+     bedst venstrestillet som små "kort". */
+  #fluxStdPosRow .sdn-cat[data-cat="sents"] .sdn-chip,
+  #fluxDrop[data-row="fluxStdPosRow"] .sdn-chip {
+    white-space: normal;
+    text-align: left;
+    max-width: 100%;
+    line-height: 1.35;
+  }
+/* Åben overskrift på smalt felt: samme kompakte nowrap som foldet — alle knapper bliver og kan
+     bruges direkte i overskriften. */
+  #descTopFrame > .flux-topbox:not(.folded) > .sdn-head,
+  #negFrame > .flux-topbox:not(.folded) > .sdn-head,
+  #descTopFrame > .flux-topbox:not(.folded) > .ftb-head,
+  #negFrame > .flux-topbox:not(.folded) > .ftb-head,
+  #descTopFrame > .flux-topbox:not(.folded) > .fmx-head,
+  #negFrame > .flux-topbox:not(.folded) > .fmx-head {
+    flex-wrap: nowrap; gap: .2rem; font-size: .72rem;
+  }
+#descTopFrame > .flux-topbox:not(.folded) > .sdn-head > .sdn-label,
+  #negFrame > .flux-topbox:not(.folded) > .sdn-head > .sdn-label,
+  #descTopFrame > .flux-topbox:not(.folded) > .ftb-head > .ftb-title,
+  #negFrame > .flux-topbox:not(.folded) > .ftb-head > .ftb-title,
+  #descTopFrame > .flux-topbox:not(.folded) > .fmx-head > .fmx-title,
+  #negFrame > .flux-topbox:not(.folded) > .fmx-head > .fmx-title {
+    flex: 1 1 auto; min-width: 0; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+  }
+/* Dropdown-menuer skal være ugennemsigtige (brugerønske 2026-10-08: standard-neg menuen var
+     gennemsigtig — en transluscent brønd-baggrund vandt over .flux-drop's egen). ID-specificitet. */
+  #fluxDrop.flux-drop { background: light-dark(#ffffff, #232528) !important; }
+.flux-drop > .sdn-body, .flux-drop > .fmx-body { width: 100%; box-sizing: border-box; }
+/* Åben række fylder stadig kun ét felt: tælleren skjules (den står også i menuen), så
+     overskriften bliver én linje som foldet. */
+  #descTopFrame > .flux-topbox:not(.folded) > .sdn-head > .sdn-count,
+  #negFrame > .flux-topbox:not(.folded) > .sdn-head > .sdn-count { display: none; }
+/* Fold-chevronen blinkede ved hover (bruger 2026-10-14): den er kun 15px, så små musebevægelser
+     ind/ud af cirklen genstartede hele tiden opacity-fadet .5<->1. Nu tænder HELE overskriftens
+     hover chevronen, så den står fast mens musen er over rækken. */
+  #descTopFrame > .flux-topbox > .sdn-head:hover > .flux-fold-btn,
+  #negFrame > .flux-topbox > .sdn-head:hover > .flux-fold-btn,
+  #descTopFrame > .flux-topbox > .ftb-head:hover > .flux-fold-btn,
+  #negFrame > .flux-topbox > .ftb-head:hover > .flux-fold-btn,
+  #descTopFrame > .flux-topbox > .fmx-head:hover > .flux-fold-btn,
+  #negFrame > .flux-topbox > .fmx-head:hover > .flux-fold-btn { opacity: 1; }
+/* Foldet IND må overskriften ikke ombryde: titlen klippes med "…", og kontakterne bliver hængende
+     yderst til højre, så de fire overskrifter flugter pænt på rækken. */
+  #descFrame > .flux-topbox, #descTopFrame > .flux-topbox.folded > .sdn-head,
+  #negFrame > .flux-topbox.folded > .sdn-head,
+  #descFrame > .flux-topbox, #descTopFrame > .flux-topbox.folded > .ftb-head,
+  #negFrame > .flux-topbox.folded > .ftb-head,
+  #descFrame > .flux-topbox, #descTopFrame > .flux-topbox.folded > .fmx-head,
+  #negFrame > .flux-topbox.folded > .fmx-head { flex-wrap: nowrap; }
+#descFrame > .flux-topbox, #descTopFrame > .flux-topbox.folded > .sdn-head > .sdn-label,
+  #negFrame > .flux-topbox.folded > .sdn-head > .sdn-label,
+  #descFrame > .flux-topbox, #descTopFrame > .flux-topbox.folded > .ftb-head > .ftb-title,
+  #negFrame > .flux-topbox.folded > .ftb-head > .ftb-title,
+  #descFrame > .flux-topbox, #descTopFrame > .flux-topbox.folded > .fmx-head > .fmx-title,
+  #negFrame > .flux-topbox.folded > .fmx-head > .fmx-title { flex: 1 1 auto; min-width: 0; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+/* …og de sekundære tekster (status-antal, "auto - realism", "edited") skjules helt, så kun navnet
+     og kontakten står tilbage i den ene gitterfirkant. */
+  #descFrame > .flux-topbox, #descTopFrame > .flux-topbox.folded > .ftb-head > .ftb-where,
+  #negFrame > .flux-topbox.folded > .ftb-head > .ftb-where,
+  #descFrame > .flux-topbox, #descTopFrame > .flux-topbox.folded > .ftb-head > .ftb-badge,
+  #negFrame > .flux-topbox.folded > .ftb-head > .ftb-badge,
+  #descFrame > .flux-topbox, #descTopFrame > .flux-topbox.folded > .fmx-head > .fmx-sub,
+  #negFrame > .flux-topbox.folded > .fmx-head > .fmx-sub,
+  #descFrame > .flux-topbox, #descTopFrame > .flux-topbox.folded > .sdn-head > .sdn-count,
+  #negFrame > .flux-topbox.folded > .sdn-head > .sdn-count { display: none; }
+/* Foldet ind må overskrifterne ikke presse boksene bredere end deres gitterfirkant. */
+  #descFrame > .flux-topbox, #descTopFrame > .flux-topbox > .sdn-head,
+  #negFrame > .flux-topbox > .sdn-head,
+  #descFrame > .flux-topbox, #descTopFrame > .flux-topbox > .ftb-head,
+  #negFrame > .flux-topbox > .ftb-head,
+  #descFrame > .flux-topbox, #descTopFrame > .flux-topbox > .fmx-head,
+  #negFrame > .flux-topbox > .fmx-head { min-width: 0; }
+/* ⬇️ Kompakt FOLDET overskrift: hele rækken på fem skal kunne være i ÉT gitterfelt (137 px), så
+     vi skruer en smule ned for skrift og luft og skjuler de kontakter der kun giver mening når
+     boksen er ÅBEN (✏️ Edit words / ⟳ re-apply). Til/fra-kontakterne bevares, så man kan slukke en
+     boks uden at folde den ud. */
+  #descFrame > .flux-topbox, #descTopFrame > .flux-topbox.folded > .sdn-head,
+  #negFrame > .flux-topbox.folded > .sdn-head { gap: .2rem; font-size: .72rem; }
+#descFrame > .flux-topbox, #descTopFrame > .flux-topbox.folded > .sdn-head > .sdn-edit,
+  #negFrame > .flux-topbox.folded > .sdn-head > .sdn-edit,
+  #descFrame > .flux-topbox, #descTopFrame > .flux-topbox.folded > .sdn-head > .sdn-all,
+  #negFrame > .flux-topbox.folded > .sdn-head > .sdn-all,
+  #descFrame > .flux-topbox, #descTopFrame > .flux-topbox.folded > .ftb-head > .ftb-reset,
+  #negFrame > .flux-topbox.folded > .ftb-head > .ftb-reset { display: none; }
+<style>
+  .fxp-sliders { display: flex; flex-direction: column; gap: 0.3rem; margin-top: 0.35rem; }
+/* 🎨 Colors-overskriftens valgte (brugerønske 2026-10-04: vis hvad der er valgt, som i ⏳ Age —
+     kun når noget er valgt). Skrives af summary() herunder; .fxp-count røres ikke af den. */
+  .fxp-picked { opacity: .6; font-size: .72rem; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; min-width: 0; flex: 0 1 auto; }
+.fxp-slider { display: flex; align-items: center; gap: 0.45rem; }
+.fxp-slider label { flex: 0 0 5.2rem; text-align: left; font-size: 0.72rem; opacity: 0.75; }
+.fxp-slider input[type="range"] { flex: 1 1 auto; min-width: 0; accent-color: #4caf50; }
+.fxp-slider .fxp-sval { flex: 0 0 7.5rem; text-align: left; font-size: 0.72rem; opacity: 0.85; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }

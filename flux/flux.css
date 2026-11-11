@@ -1,0 +1,26 @@
+.flux-wrap { max-width: 780px; margin: 0 auto; text-align: left; }
+.flux-title { text-align: center; font-weight: 700; font-size: 1.15rem; margin: 0.6rem auto 0.1rem; }
+.flux-note { text-align: center; opacity: 0.65; font-size: 0.8rem; margin: 0 auto 0.8rem; max-width: 640px; }
+.flux-lbl { font-weight: 600; font-size: 0.85rem; margin: 0.7rem 0 0.25rem; }
+.flux-text { width: 100%; box-sizing: border-box; font: inherit; font-size: 0.9rem; padding: 0.5rem 0.6rem; border-radius: 10px; border: 1px solid var(--th-border, #ccc); background: var(--th-surface, #fff); color: inherit; resize: vertical; }
+.flux-preview { opacity: 0.9; font-size: 0.8rem; }
+.flux-sel { font: inherit; font-size: 0.88rem; max-width: 100%; padding: 0.4rem 0.6rem; border-radius: 10px; border: 1px solid var(--th-border, #ccc); background: var(--th-surface, #fff); color: inherit; }
+.flux-row { display: flex; gap: 0.6rem; align-items: center; flex-wrap: wrap; margin: 0.3rem 0; }
+.flux-seed { width: 7rem; font: inherit; padding: 0.35rem 0.5rem; border-radius: 10px; border: 1px solid var(--th-border, #ccc); background: var(--th-surface, #fff); color: inherit; }
+.flux-genre { font-size: 0.8rem; opacity: 0.7; margin: 0.5rem 0 0; }
+.flux-gen { display: block; margin: 0.6rem auto; cursor: pointer; font: inherit; font-size: 1rem; font-weight: 700; padding: 0.6rem 2.2rem; border-radius: 999px; border: 1px solid var(--th-accent, #888); background: var(--th-accent, #444); color: var(--th-accent-text, #fff); }
+.flux-gen:disabled { opacity: 0.55; cursor: wait; }
+.flux-status { text-align: center; min-height: 1.4em; font-size: 0.88rem; opacity: 0.85; }
+.flux-status.flux-busy::after { content: "…"; animation: fluxdots 1s steps(3) infinite; }
+@keyframes fluxdots { 0% { content: ""; } 33% { content: "."; } 66% { content: ".."; } 100% { content: "…"; } }
+.flux-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(220px, 1fr)); gap: 0.7rem; margin-top: 0.8rem; }
+.flux-card { border: 1px solid var(--th-border, #ccc); border-radius: 12px; overflow: hidden; background: var(--th-surface, #fff); }
+.flux-card img { width: 100%; display: block; }
+.flux-cap { font-size: 0.75rem; padding: 0.35rem 0.5rem; opacity: 0.8; }
+.flux-acts { display: flex; gap: 0.4rem; padding: 0 0.5rem 0.5rem; }
+.flux-btn { cursor: pointer; font: inherit; font-size: 0.78rem; padding: 0.28rem 0.7rem; border-radius: 999px; border: 1px solid var(--th-border, #ccc); background: transparent; color: inherit; text-decoration: none; }
+.flux-btn:hover { border-color: var(--th-accent, #888); }
+.flux-photo { margin: 0.7rem 0 0; border: 1px solid var(--th-border, #ccc); border-radius: 12px; padding: 0.4rem 0.7rem; }
+.flux-photo summary { cursor: pointer; font-weight: 600; font-size: 0.85rem; }
+.flux-photo-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(200px, 1fr)); gap: 0.5rem; margin-top: 0.5rem; }
+.flux-photo-cell { display: flex; flex-direction: column; gap: 0.15rem; font-size: 0.78rem; font-weight: 600; }

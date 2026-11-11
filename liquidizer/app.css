@@ -1,0 +1,310 @@
+
+    @font-face {
+    font-family: 'Titan One';
+    font-style: normal;
+    font-weight: 400;
+    font-display: swap;
+    src: url('titan-one.woff2') format('woff2');
+  }#liq-root {
+    --bg: #0a0c16;
+    --surface: rgba(13, 16, 32, .80);
+    --surface2: rgba(26, 31, 56, .90);
+    --panel: var(--surface);
+    --panel2: var(--surface2);
+    --panelSolid: #151829;
+    --panelSolid2: #1b1f33;
+    --border: rgba(255, 255, 255, .16);
+    --border2: rgba(255, 255, 255, .26);
+    --bg-grad:
+      radial-gradient(1100px 640px at 12% -8%, rgba(104, 109, 115, .32), transparent 60%),
+      radial-gradient(950px 620px at 108% 16%, rgba(34, 211, 238, .18), transparent 55%),
+      radial-gradient(950px 720px at 50% 120%, rgba(244, 63, 142, .16), transparent 60%);
+    --text: #eceef7;
+    --muted: #a4abc4;
+    --dim: #767d99;
+    --steel: #676b71;
+    --accent: #f43f8e;
+    --accent2: #22d3ee;
+    --amber: #fbbf24;
+        --neon: #3dff24;
+    --grad: linear-gradient(135deg, #555b63 0%, #676b71 55%, #77797b 100%);
+    --grad2: linear-gradient(135deg, #6e7277 0%, #555b63 100%);
+    --glow: 0 8px 32px rgba(104, 109, 115, .4);
+    --radius: 18px;
+    --radius-sm: 11px;
+    --font-body: 'Outfit', 'Inter', system-ui, -apple-system, "Segoe UI", sans-serif;
+    --font-display: 'Outfit', 'Inter', system-ui, sans-serif;
+    --font-ui: 'Inter', 'Outfit', system-ui, -apple-system, "Segoe UI", sans-serif;
+    --mono: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+        --perchCorner: 20px;
+  }#liq-root * { box-sizing: border-box; }#liq-root, #liq-root { margin: 0; padding: 0; }#liq-root { color-scheme: dark; scroll-behavior: smooth; }#liq-root {
+    background-color: var(--bg);
+        background-image: var(--bg-grad);
+    background-attachment: fixed;
+    background-repeat: no-repeat;
+    background-size: cover;
+    color: var(--text);
+    font-family: var(--font-body);
+    line-height: 1.5;
+    -webkit-font-smoothing: antialiased;
+    min-height: 100vh;
+    text-align: left;
+    overflow-x: hidden;
+  }#liq-root a { color: var(--accent2); }#liq-root .ic { width: 1em; height: 1em; vertical-align: -.125em; display: inline-block; flex: none; }#liq-root .ic-spin { display: inline-block; animation: spin 1.5s linear infinite; }#liq-root ::selection { background: rgba(244, 63, 142, .35); }#liq-root .app { display: flex; flex-direction: column; min-height: 100vh; }#liq-root header.topbar {
+    display: flex; align-items: center; justify-content: space-between; gap: 10px;
+    padding: 10px calc(16px + var(--perchCorner)) 10px 16px;
+    border-bottom: 1px solid var(--border);
+    background: rgba(12, 14, 26, .85);
+    backdrop-filter: blur(12px); -webkit-backdrop-filter: blur(12px);
+    position: sticky; top: 0; z-index: 20;
+  }#liq-root .brand { display: flex; align-items: baseline; gap: 11px; min-width: 0; }#liq-root .brand h1.wordmark {
+    margin: 0; font-family: 'Chocker', 'Titan One', var(--font-display);
+    font-weight: 400; font-size: 21px; line-height: 1.1; letter-spacing: .3px;
+    white-space: nowrap; color: var(--neon);
+    text-shadow: 0 0 8px rgba(61, 255, 36, .55), 0 0 22px rgba(61, 255, 36, .35);
+  }#liq-root .brand p { margin: 0; font-size: 11.5px; color: var(--muted); font-family: var(--font-ui); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }#liq-root .brandLogo {
+    flex: none; align-self: center; height: 32px; width: auto;
+        color: var(--neon); position: relative; top: -4px;
+    transform: scaleY(-1);
+    filter: drop-shadow(0 0 1.2px currentColor);
+  }#liq-root .brandLogo polygon { fill-opacity: .08; }#liq-root .topbtns { display: flex; gap: 8px; flex: none; align-items: center; }#liq-root .menuWrap { position: relative; }#liq-root button.menuBtn {
+    display: grid; place-items: center; width: 38px; height: 38px; padding: 0;
+    border-radius: 50%; border: 1px solid rgba(34, 211, 238, .45); background: rgba(34, 211, 238, .07);
+  }#liq-root button.menuBtn:hover {
+    border-color: rgba(34, 211, 238, .9); background: rgba(34, 211, 238, .14);
+    box-shadow: 0 0 14px rgba(34, 211, 238, .28);
+  }#liq-root button.menuBtn.active {
+    background: rgba(34, 211, 238, .18); border-color: rgba(34, 211, 238, .95);
+    box-shadow: 0 0 16px rgba(34, 211, 238, .35);
+  }#liq-root .burger { display: block; }#liq-root .menuPanel {
+    position: absolute; right: 0; top: calc(100% + 6px); z-index: 30;
+    display: flex; flex-direction: column; gap: 2px; min-width: 190px; padding: 6px;
+    background: var(--panelSolid); border: 1px solid var(--border2); border-radius: var(--radius);
+    box-shadow: 0 24px 60px rgba(0, 0, 0, .65);
+  }#liq-root .menuPanel[hidden] { display: none; }#liq-root .menuPanel button {
+    text-align: left; width: 100%; padding: 10px 12px; border-radius: 10px;
+    background: transparent; border: none; color: var(--text);
+        justify-content: flex-start; gap: 9px;
+  }#liq-root .menuPanel button:hover { background: rgba(104, 109, 115, .28); color: #fff; }#liq-root .menuPanel button .icon { width: 20px; display: inline-flex; justify-content: center; font-size: 1rem; }#liq-root .menuPanel button:hover .icon { color: var(--text); }#liq-root button {
+    background: var(--panel2); color: var(--text);
+    border: 1px solid var(--border); border-radius: var(--radius-sm);
+    padding: 8px 12px; font-size: 13px; cursor: pointer;
+    white-space: nowrap; font-family: var(--font-ui);
+        display: inline-flex; align-items: center; justify-content: center; gap: 6px;
+    transition: background .15s, border-color .15s, box-shadow .15s, filter .15s;
+  }#liq-root button:hover { background: rgba(104, 109, 115, .28); border-color: var(--border2); }#liq-root button:active { transform: translateY(1px); }#liq-root button.primary {
+    background: var(--grad);
+    color: #fff; border: none; font-weight: 700;
+    box-shadow: 0 4px 18px rgba(104, 109, 115, .28);
+  }#liq-root button.primary:hover { filter: brightness(1.08); box-shadow: var(--glow); }#liq-root button.ghost { background: transparent; }#liq-root button.sm { padding: 6px 9px; font-size: 12px; }#liq-root button:disabled { opacity: .45; cursor: default; }#liq-root button:disabled:hover { background: var(--panel2); border-color: var(--border); }#liq-root main.layout {
+    flex: 1; display: grid; grid-template-columns: minmax(0, 1fr) 336px; gap: 14px;
+    padding: 14px; max-width: 1500px; width: 100%; margin: 0 auto; align-items: start;
+  }#liq-root .stageCol { display: flex; flex-direction: column; gap: 10px; min-width: 0; }#liq-root .stage-wrap {
+    position: relative; display: grid; place-items: center;
+    background: radial-gradient(1200px 600px at 50% 0%, rgba(26, 31, 56, .55), rgba(10, 12, 22, .85));
+    border: 1px solid var(--border); border-radius: var(--radius);
+    box-shadow: 0 10px 30px rgba(0, 0, 0, .25);
+    padding: 14px; overflow: hidden;
+  }#liq-root /* The box only stands tall while it is holding the empty dropzone. Once a photo is in it the box
+     hugs the photo, #liq-root so "scroll the photo into view" can actually put the whole picture on screen —
+     with a fixed 320px box the photo sat centred inside it and could end up below the fold on a short
+     window, #liq-root with nothing to touch. */
+  #liq-root.no-image .stage-wrap { min-height: 320px; }#liq-root .stage-wrap.dragover { outline: 2px dashed var(--accent2); outline-offset: -8px; }#liq-root .placeBar {
+    display: flex; align-items: center; gap: 8px; padding: 8px 10px;
+    position: sticky; bottom: 8px; z-index: 3;
+    background: var(--panel); border: 1px solid var(--border2); border-radius: var(--radius-sm);
+    box-shadow: 0 10px 26px rgba(0, 0, 0, .35); text-align: left;
+    font-size: 12.5px; line-height: 1.3; color: var(--text);
+    /* The bar is pinned to the bottom of a short viewport, so on a small screen it can sit over the
+       photo — and the bottom of the photo is exactly where you start a stroke for embers rising out
+       of a fire. Everything but its buttons lets the touch through to the canvas underneath, so the
+       bar can hide the picture but never swallow a brush stroke. */
+    pointer-events: none;
+  }#liq-root .placeBar .placeText { flex: 1 1 auto; min-width: 0; }#liq-root .placeBar .placeTint {
+    flex: none; width: 11px; height: 11px; border-radius: 50%;
+    box-shadow: 0 0 0 2px rgba(255, 255, 255, .16);
+  }#liq-root .placeBar button { flex: none; pointer-events: auto; }#liq-root .stage { position: relative; display: block; line-height: 0; }#liq-root /* No `max-height` here, #liq-root deliberately. fitStage() sets the canvas's width *and* height from one
+     scale factor (so the photo keeps its aspect ratio), #liq-root and any CSS clamp on the height fights it:
+     the picture was being letterboxed into a 77px-tall strip whenever the window was short (a phone
+     in the editor, #liq-root a landscape phone), #liq-root which also squashes the vertical room the brush draws in. The
+     script sizes the photo to the window it is actually in, #liq-root so the clamp only ever did damage. */
+  canvas#stageCanvas {
+    display: block; max-width: 100%;
+    background: #0d1117; border-radius: 12px; cursor: crosshair;
+    touch-action: none; user-select: none;
+    box-shadow: 0 18px 50px rgba(0, 0, 0, .6);
+  }#liq-root canvas#maskCanvas {
+    position: absolute; inset: 0; width: 100%; height: 100%;
+    pointer-events: none; border-radius: 12px;
+  }#liq-root canvas#maskCanvas[hidden] { display: none; }#liq-root /* Where the pivot / focus point is. The pick used to be invisible until the effect moved: a tap on
+     the photo placed a point you could not see, #liq-root which is indistinguishable from a brush that does
+     nothing. These appear while picking — and while a layer that uses them is selected. */
+  .pickMark {
+    position: absolute; width: 22px; height: 22px; margin: -11px 0 0 -11px;
+    border-radius: 50%; border: 2px solid #22d3ee; z-index: 4; pointer-events: none;
+    box-shadow: 0 0 0 2px rgba(0, 0, 0, .5), inset 0 0 0 2px rgba(0, 0, 0, .4);
+    animation: pickPulse 1.4s ease-in-out infinite;
+  }#liq-root .pickMark::before, #liq-root .pickMark::after {
+    content: ""; position: absolute; background: currentColor; opacity: .85;
+  }#liq-root .pickMark::before { left: 50%; top: -7px; width: 2px; height: 5px; margin-left: -1px; box-shadow: 0 29px 0 currentColor; }#liq-root .pickMark::after { top: 50%; left: -7px; height: 2px; width: 5px; margin-top: -1px; box-shadow: 29px 0 0 currentColor; }#liq-root .pickMark.zoom { border-color: #f43f8e; }
+  @keyframes pickPulse { 0%, 100% { transform: scale(1); } 50% { transform: scale(1.18); } }#liq-root .zoomBar {
+    display: flex; align-items: center; gap: 10px;
+    background: var(--panel); border: 1px solid var(--border);
+    border-radius: var(--radius-sm); padding: 8px 12px;
+  }#liq-root .mono { font-family: var(--mono); font-size: 11.5px; color: var(--muted); font-variant-numeric: tabular-nums; }#liq-root .zoomBar input[type=range] { flex: 1; }#liq-root #playPauseBtn .ic { width: 17px; height: 17px; }#liq-root.no-image .zoomBar, #liq-root.no-image #timelineSeg, #liq-root.no-image #tempoRow { opacity: .38; pointer-events: none; }#liq-root .dropzone { position: absolute; inset: 0; display: grid; place-items: center; padding: 20px; text-align: center; }#liq-root .dropzone[hidden] { display: none; }#liq-root .dz-icon { font-size: 42px; line-height: 1; color: var(--accent2); opacity: .85; }#liq-root .dropzone h2 { margin: 12px 0 2px; font-size: 20px; font-family: var(--font-display); font-weight: 700; letter-spacing: .02em; color: #fff; }#liq-root .dropzone p { margin: 8px 0 14px; color: var(--muted); font-size: 13px; }#liq-root .dz-btns { display: flex; gap: 10px; justify-content: center; flex-wrap: wrap; }#liq-root aside.panel { display: flex; flex-direction: column; gap: 10px; min-width: 0; }#liq-root details.card {
+    background: var(--panel); border: 1px solid var(--border);
+    border-radius: var(--radius); overflow: hidden;
+    box-shadow: 0 10px 30px rgba(0, 0, 0, .25);
+  }#liq-root details.card > summary {
+    list-style: none; cursor: pointer; user-select: none;
+    padding: 12px 14px; font-size: 11px; letter-spacing: 1.1px;
+    text-transform: uppercase; color: var(--muted); font-weight: 700;
+    font-family: var(--font-display);
+    display: flex; align-items: center; justify-content: space-between;
+    transition: color .15s, background .15s;
+  }#liq-root details.card > summary::-webkit-details-marker { display: none; }#liq-root details.card > summary:hover { color: var(--text); background: rgba(104, 109, 115, .16); }#liq-root details.card[open] > summary { color: var(--text); }#liq-root .cardBody { padding: 0 14px 14px; display: flex; flex-direction: column; gap: 9px; }#liq-root .advToggle {
+    display: flex; align-items: center; gap: 7px; width: 100%;
+    background: none; border: 1px dashed var(--border2); border-radius: var(--radius-sm);
+    color: var(--muted); font-size: 11px; letter-spacing: .9px; text-transform: uppercase;
+    font-weight: 700; font-family: var(--font-display); padding: 7px 9px; cursor: pointer;
+    transition: color .15s, background .15s, border-color .15s;
+  }#liq-root .advToggle:hover { color: var(--text); background: rgba(104, 109, 115, .14); border-color: var(--border2); }#liq-root .advToggle .ic { width: 13px; height: 13px; transition: transform .2s; }#liq-root .advToggle[aria-expanded="true"] { border-style: solid; color: var(--text); }#liq-root .advToggle[aria-expanded="true"] .ic { transform: rotate(180deg); }#liq-root .advToggle .advCount { margin-left: auto; opacity: .75; letter-spacing: 0; text-transform: none; font-weight: 600; }#liq-root .advBody { display: flex; flex-direction: column; gap: 9px; }#liq-root .layerRow .layerTool.needsArea { color: var(--amber); }#liq-root .col { display: flex; flex-direction: column; gap: 9px; }#liq-root .seg { display: flex; gap: 6px; flex-wrap: wrap; }#liq-root .seg button { flex: 1; padding: 8px 5px; font-weight: 600; color: var(--muted); font-size: 12.5px; border-radius: 999px; }#liq-root .seg button.active { background: var(--grad); border-color: transparent; color: #fff; box-shadow: var(--glow); }#liq-root .modeGrid { display: grid; grid-template-columns: repeat(auto-fill, minmax(78px, 1fr)); gap: 6px; }#liq-root .modeGrid button { padding: 10px 4px; font-size: 12.5px; font-weight: 600; color: var(--muted); }#liq-root .modeGrid button.active { background: var(--grad); border-color: transparent; color: #fff; box-shadow: var(--glow); }#liq-root .layerHead { display: flex; align-items: center; justify-content: space-between; gap: 8px; }#liq-root .layerHead > span { font-size: 11px; letter-spacing: 1px; text-transform: uppercase; color: var(--muted); font-weight: 700; font-family: var(--font-display); }#liq-root .layerList { display: flex; flex-direction: column; gap: 5px; }#liq-root .layerRow {
+    display: flex; align-items: center; gap: 5px; padding: 5px 7px; cursor: pointer;
+    background: var(--panel2); border: 1px solid var(--border); border-radius: var(--radius-sm);
+    font-size: 12px; min-width: 0;
+  }#liq-root .layerRow.active { border-color: var(--accent2); border-left: 3px solid var(--accent2); padding-left: 5px; background: rgba(34, 211, 238, .14); box-shadow: 0 0 18px rgba(34, 211, 238, .16); }#liq-root .layerRow.active .layerName { color: #fff; }#liq-root .layerRow.active .chip { color: #cfeaf3; border-color: rgba(255, 255, 255, .22); }#liq-root .layerRow.active .badge { color: #f9c6dc; }#liq-root .layerRow.active .layerOn, #liq-root .layerRow.active .layerTool { color: #bfe6ee; }#liq-root .swatch {
+    flex: none; width: 11px; height: 11px; border-radius: 3px; margin-right: 2px;
+    box-shadow: inset 0 0 0 1px rgba(255, 255, 255, .22);
+  }#liq-root .layerRow.muted { opacity: .55; }#liq-root .layerRow .layerOn {
+    flex: none; background: none; border: none; padding: 0 2px; font-size: 12px; line-height: 1;
+    color: var(--accent2); border-radius: 5px;
+  }#liq-root .layerRow .layerName { flex: 1; min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; font-weight: 600; }#liq-root .layerRow .chip {
+    flex: none; font-size: 10.5px; color: var(--muted);
+    border: 1px solid var(--border); border-radius: 999px; padding: 1px 6px;
+  }#liq-root .layerRow .badge { flex: none; font-size: 10px; color: var(--accent); font-variant-numeric: tabular-nums; }#liq-root .layerRow .layerTools { flex: none; display: flex; gap: 3px; margin-left: 6px; }#liq-root .layerRow .layerTool {
+    background: none; border: none; padding: 2px 1px; font-size: 12px; line-height: 1;
+    color: var(--muted); border-radius: 5px;
+  }#liq-root .layerRow .layerOn:hover, #liq-root .layerRow .layerTool:hover { background: rgba(255, 255, 255, .09); color: var(--text); }#liq-root .layerRow .spawnTool .toolLabel { display: none; }#liq-root .layerRow .layerTool.armed {
+    color: var(--text); background: rgba(34, 211, 238, .18);
+    box-shadow: inset 0 0 0 1.5px var(--accent2);
+  }#liq-root /* A 14x16 px icon is not a button on a phone — and the spawn-area button is the one control every
+     emitter needs, #liq-root because an emitter with no painted area shows nothing at all. On a touch screen
+     the rows grow a second line for the tools so each one is a finger-sized target, #liq-root and the
+     spawn-area button carries a word ("Area") so it is identifiable without a hover tooltip. */
+  @media (pointer: coarse) {
+    .layerRow { flex-wrap: wrap; row-gap: 5px; gap: 6px; padding: 6px 8px; }
+    .layerRow .layerOn { width: 34px; height: 34px; padding: 0; font-size: 16px; border-radius: 8px; display: inline-flex; align-items: center; justify-content: center; }
+    .layerRow .badge { font-size: 11px; }
+    .layerRow .layerTools { flex: 1 0 100%; justify-content: flex-end; margin-left: 0; gap: 6px; }
+    .layerRow .layerTool {
+      min-width: 40px; min-height: 34px; padding: 0 9px; font-size: 16px;
+      display: inline-flex; align-items: center; justify-content: center; gap: 5px;
+      border: 1px solid var(--border); background: var(--panel2); border-radius: 9px;
+    }
+    .layerRow .layerTool.armed { background: rgba(34, 211, 238, .22); }
+    .layerRow .spawnTool { min-width: 66px; }
+    .layerRow .spawnTool .toolLabel { display: inline; font-size: 11px; font-weight: 700; letter-spacing: .3px; }
+  }#liq-root.light .layerRow .layerTool.armed { background: rgba(14, 116, 144, .16); }#liq-root .row { display: flex; align-items: center; justify-content: space-between; gap: 10px; }#liq-root .row label { font-size: 13px; flex: none; }#liq-root .row .val { font-size: 12px; color: var(--accent); font-weight: 700; min-width: 44px; text-align: right; font-variant-numeric: tabular-nums; }#liq-root input[type=range] { flex: 1; accent-color: var(--accent2); min-width: 60px; }#liq-root input[type=text], #liq-root input[type=password], #liq-root input[type=number] {
+    background: var(--panelSolid2); color: var(--text); border: 1px solid var(--border2);
+    border-radius: var(--radius-sm); padding: 8px 10px; font-size: 13px; width: 100%; font-family: var(--font-ui);
+  }#liq-root input[type=text]:focus, #liq-root input[type=password]:focus, #liq-root input[type=number]:focus {
+    outline: none; border-color: var(--accent2); box-shadow: 0 0 0 3px rgba(34, 211, 238, .22);
+  }#liq-root input::placeholder { color: var(--dim); }#liq-root .row input[type=number] { flex: 1; width: auto; text-align: right; font-variant-numeric: tabular-nums; padding: 7px 8px; }#liq-root select.sel {
+    flex: 1; width: 100%; -webkit-appearance: none; -moz-appearance: none; appearance: none;
+    background-color: var(--panelSolid2); color: var(--text);
+    border: 1px solid var(--border2); border-radius: var(--radius-sm);
+    padding: 8px 30px 8px 10px; font-size: 13px; cursor: pointer; font-family: var(--font-ui);
+    background-image: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 12 8'><path d='M1 1l5 5 5-5' fill='none' stroke='%2322d3ee' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'/></svg>");
+    background-repeat: no-repeat; background-position: right .6rem center; background-size: .75em auto;
+  }#liq-root select.sel:hover { border-color: var(--accent2); }#liq-root select.sel:focus { outline: none; border-color: var(--accent2); box-shadow: 0 0 0 3px rgba(34, 211, 238, .22); }#liq-root .hint, #liq-root .sub { font-size: 12px; color: var(--muted); line-height: 1.5; }#liq-root .sub.warn { color: var(--amber); }#liq-root .sub.bad { color: #ff7a7a; }#liq-root .sub.good { color: var(--accent2); }#liq-root .check { display: flex; align-items: center; gap: 8px; font-size: 13px; cursor: pointer; }#liq-root .check input { accent-color: var(--accent2); }#liq-root .btnrow { display: flex; gap: 6px; }#liq-root .btnrow > * { flex: 1; min-width: 0; }#liq-root button.wide { width: 100%; padding: 10px 12px; font-size: 13.5px; }#liq-root .presetGrid { display: grid; grid-template-columns: 1fr 1fr; gap: 6px; }#liq-root .presetGrid button { padding: 8px 6px; font-size: 12px; border-radius: 999px; }#liq-root .presetGrid button:hover { border-color: var(--accent2); }#liq-root .presetGrid button.active { background: var(--grad); border-color: transparent; color: #fff; box-shadow: var(--glow); }#liq-root .glitchGrid { display: flex; flex-direction: column; gap: 6px; }#liq-root .glitchRow { display: grid; grid-template-columns: 76px 1fr 38px; align-items: center; gap: 7px; }#liq-root .glitchRow label {
+    font-size: 12px; color: var(--muted); cursor: pointer; min-width: 0;
+    overflow: hidden; text-overflow: ellipsis; white-space: nowrap;
+  }#liq-root .glitchRow label.on { color: var(--text); }#liq-root .glitchRow input[type=range] { width: 100%; min-width: 0; }#liq-root .glitchRow .val { font-size: 11px; color: var(--accent); font-weight: 700; text-align: right; font-variant-numeric: tabular-nums; }#liq-root .fxColors { flex: 1; display: flex; gap: 8px; min-width: 0; }#liq-root .fxColors input[type=color] { flex: 1; min-width: 0; }#liq-root input[type=color] {
+    height: 30px; padding: 2px; cursor: pointer; background: var(--panelSolid2);
+    border: 1px solid var(--border2); border-radius: var(--radius-sm);
+  }#liq-root .list { display: flex; flex-direction: column; gap: 5px; }#liq-root .listRow { display: flex; align-items: center; gap: 6px; font-size: 12.5px; }#liq-root .listRow span { flex: 1; min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }#liq-root .listRow.pinned {
+    background: var(--panel2); border: 1px solid var(--border); border-radius: var(--radius-sm);
+    padding: 4px 6px; margin-bottom: 2px;
+  }#liq-root .listRow.pinned > span, #liq-root .listRow.pinned .tag {
+    flex: 0 0 auto; overflow: visible; text-overflow: clip;
+  }#liq-root .listRow.pinned > span:first-child { font-weight: 600; }#liq-root .listRow.pinned button { flex: 0 0 auto; margin-left: auto; }#liq-root .modal {
+    position: fixed; inset: 0; z-index: 60; display: grid; place-items: center;
+    background: rgba(6, 8, 16, .72); padding: 16px;
+    backdrop-filter: blur(10px); -webkit-backdrop-filter: blur(10px);
+  }#liq-root .modal[hidden] { display: none; }#liq-root .modalBox {
+    width: min(760px, 96vw); max-height: 88vh; overflow: auto;
+    background: var(--panelSolid); border: 1px solid var(--border2);
+    border-radius: 22px; padding: 18px; box-shadow: 0 30px 80px rgba(0, 0, 0, .6);
+    text-align: left;
+  }#liq-root .modalBox.narrow { width: min(360px, 92vw); text-align: center; }#liq-root .modalHead { display: flex; align-items: center; justify-content: space-between; margin-bottom: 12px; gap: 10px; }#liq-root .modalHead h2 { margin: 0; font-size: 16px; font-family: var(--font-display); font-weight: 700; letter-spacing: .02em; color: #fff; }#liq-root .modalFoot { display: flex; gap: 8px; align-items: center; margin-top: 14px; flex-wrap: wrap; }#liq-root .modalFoot input { flex: 1; min-width: 140px; }#liq-root .aboutWord {
+    margin: 18px 0 7px; font-family: 'Chocker', 'Titan One', var(--font-display);
+    font-size: 32px; line-height: 1.15; letter-spacing: .5px; color: var(--neon);
+    text-shadow: 0 0 10px rgba(61, 255, 36, .5), 0 0 26px rgba(61, 255, 36, .32);
+  }#liq-root .aboutSub {
+    font-size: 11.5px; line-height: 1.5; color: var(--dim); font-family: var(--font-ui);
+    margin: 0 0 12px;
+  }#liq-root .aboutLine { font-size: 13px; color: var(--muted); font-family: var(--font-ui); }#liq-root .aboutLine + .aboutLine { margin-top: 3px; }#liq-root .aboutLine.byline { font-size: 11.5px; color: var(--dim); font-weight: 400; margin-top: 10px; letter-spacing: .3px; }#liq-root .aboutRule { height: 1px; margin: 0 auto 9px; width: 68px; border-radius: 1px; background: linear-gradient(90deg, transparent, rgba(61, 255, 36, .6), transparent); }#liq-root .spinner {
+    width: 32px; height: 32px; margin: 4px auto 12px; border-radius: 50%;
+    border: 3px solid rgba(34, 211, 238, .2); border-top-color: var(--accent2);
+    animation: spin .8s linear infinite;
+  }#liq-root #exportVideoEl {
+    width: 100%; max-height: 44vh; display: block; margin: 0 auto;
+    border-radius: 12px; background: #05060c; border: 1px solid var(--border2);
+  }#liq-root #exportResultInfo { font-size: 12px; line-height: 1.5; }#liq-root #exportResultCtn .modalFoot { justify-content: center; }#liq-root .modalBox.resultMode { display: flex; flex-direction: column; overflow: hidden; }#liq-root .modalBox.resultMode #exportResultCtn:not([hidden]) {
+    display: flex; flex-direction: column; align-items: center; justify-content: center;
+    flex: 1 1 auto; min-height: 0;
+  }#liq-root .modalBox.resultMode #exportVideoEl { flex: 0 0 auto; width: auto; height: auto; }#liq-root .modalBox.resultMode #exportResultCtn .sub, #liq-root .modalBox.resultMode #exportResultCtn .modalFoot { flex: 0 0 auto; margin-top: 0; max-width: 100%; }
+  @keyframes spin { to { transform: rotate(360deg); } }#liq-root .bar { height: 8px; border-radius: 99px; background: rgba(6, 8, 16, .8); overflow: hidden; border: 1px solid var(--border); }#liq-root .barFill { height: 100%; width: 0%; background: linear-gradient(90deg, var(--accent2), var(--accent)); transition: width .12s linear; }#liq-root .toast {
+    position: fixed; left: 50%; bottom: 22px; transform: translateX(-50%);
+    background: var(--panelSolid2); border: 1px solid var(--border2); color: var(--text);
+    padding: 12px 18px; border-radius: 14px; font-size: 13px; font-family: var(--font-ui);
+    box-shadow: 0 18px 50px rgba(0, 0, 0, .5);
+    opacity: 0; transition: opacity .3s; pointer-events: none; z-index: 80; max-width: 88vw; text-align: center;
+  }#liq-root .toast.show { opacity: 1; }#liq-root .spin-dot { display: inline-block; width: 12px; height: 12px; border-radius: 50%; border: 2px solid var(--accent2); border-top-color: transparent; animation: spin .7s linear infinite; vertical-align: -2px; }#liq-root .uploader { position: fixed; inset: 0; z-index: 70; display: flex; flex-direction: column; background: var(--bg); overflow: hidden; }#liq-root .uploader[hidden] { display: none; }#liq-root .uploaderBar {
+    flex: 0 0 auto; display: flex; align-items: center; gap: 10px; padding: 9px 12px;
+    background: var(--panelSolid); border-bottom: 1px solid var(--border2); text-align: left;
+  }#liq-root .uploaderBar h2 {
+    margin: 0 auto 0 0; white-space: nowrap; font-size: 14px; font-family: var(--font-display);
+    font-weight: 700; letter-spacing: .02em; color: var(--text);
+  }#liq-root .uploaderBar .sub { margin: 0; flex: 1 1 auto; min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }#liq-root .uploaderTab {
+    flex: 0 0 auto; display: inline-flex; align-items: center; gap: 5px; white-space: nowrap;
+    font-size: 12px; color: var(--accent2); text-decoration: none;
+    border: 1px solid var(--border2); border-radius: 8px; padding: 5px 9px;
+  }#liq-root .uploaderTab:hover { background: rgba(104, 109, 115, .28); color: var(--text); }#liq-root .uploaderFrame { display: block; flex: 1 1 auto; min-height: 0; min-width: 0; width: 100%; border: 0; background: #0a0c16; }
+  @media (max-width: 620px) {#liq-root .uploaderBar .sub { display: none; }
+  }#liq-root .libTable { width: 100%; border-collapse: collapse; font-size: 12px; margin-top: 4px; }#liq-root .libTable th { text-align: left; color: var(--muted); font-weight: 600; padding: 6px; border-bottom: 1px solid var(--border); white-space: nowrap; }#liq-root .libTable td { padding: 6px; border-bottom: 1px solid rgba(255, 255, 255, .06); vertical-align: top; }#liq-root .libTable tr.off td { opacity: .45; }#liq-root .libTable .num { text-align: right; white-space: nowrap; font-variant-numeric: tabular-nums; }#liq-root .libName { font-weight: 600; }#liq-root .libMeta { color: var(--muted); display: block; margin-top: 2px; }#liq-root .tag { display: inline-block; padding: 1px 8px; border-radius: 999px; font-size: 10.5px; border: 1px solid var(--border); color: var(--muted); white-space: nowrap; }#liq-root .tag.on { color: var(--accent2); border-color: rgba(34, 211, 238, .5); }#liq-root .tag.warn { color: var(--amber); border-color: rgba(251, 191, 36, .45); }#liq-root .tag.bad { color: #ff7d7d; border-color: #7a3434; }
+    @media (max-width: 620px) {#liq-root .libTable { font-size: 11px; }#liq-root .libTable th, #liq-root .libTable td { padding: 5px 4px; }#liq-root .libTable { table-layout: fixed; }#liq-root .libTable th, #liq-root .libTable td { white-space: normal; overflow-wrap: anywhere; }#liq-root .libTable .num { white-space: normal; overflow-wrap: anywhere; text-align: left; }#liq-root .libTable th:nth-child(1), #liq-root .libTable td:nth-child(1) { width: 39%; }#liq-root .libTable th:nth-child(2), #liq-root .libTable td:nth-child(2) { width: 21%; }#liq-root .libTable th:nth-child(3), #liq-root .libTable td:nth-child(3) { width: 19%; }#liq-root .libTable th:nth-child(4), #liq-root .libTable td:nth-child(4) { width: 21%; }#liq-root .tag { white-space: normal; }
+  }#liq-root .depthThumb { width: 100%; max-width: 170px; border-radius: 12px; border: 1px solid var(--border); display: block; margin: 8px auto 2px; }#liq-root .kvRow { display: flex; justify-content: space-between; gap: 10px; font-size: 12.5px; padding: 3px 0; border-top: 1px solid rgba(255, 255, 255, .06); }#liq-root .kvRow b { font-variant-numeric: tabular-nums; }
+
+  @media (max-width: 940px) {#liq-root main.layout { grid-template-columns: 1fr; }#liq-root .brand p { display: none; }
+  }
+  @media (max-width: 520px) {#liq-root header.topbar { padding: 8px calc(10px + var(--perchCorner)) 8px 10px; }#liq-root .brand h1.wordmark { font-size: 18px; }#liq-root .brandLogo { height: 26px; top: -3px; }#liq-root main.layout { padding: 10px; gap: 10px; }#liq-root .topbtns button { padding: 7px 9px; font-size: 12px; }#liq-root button.menuBtn { width: 34px; height: 34px; padding: 0; }
+  }#liq-root.light { color-scheme: light; }#liq-root.light {
+    --bg: #eef0f9;
+    --surface: rgba(255, 255, 255, .88);
+    --surface2: rgba(255, 255, 255, .95);
+    --panelSolid: #ffffff;
+    --panelSolid2: #f3f4fb;
+    --border: rgba(25, 32, 72, .14);
+    --border2: rgba(25, 32, 72, .24);
+    --bg-grad:
+      radial-gradient(1100px 640px at 12% -8%, rgba(104, 109, 115, .20), transparent 60%),
+      radial-gradient(950px 620px at 108% 16%, rgba(34, 211, 238, .14), transparent 55%),
+      radial-gradient(950px 720px at 50% 120%, rgba(244, 63, 142, .12), transparent 60%);
+    --text: #191c30;
+    --muted: #5b6280;
+    --dim: #8a91ab;
+    --steel: #3e4550;
+        --accent: #c02a68;
+    --accent2: #0e7490;
+    --amber: #b45309;
+        --neon: #1d7a32;
+    --grad: linear-gradient(135deg, #454a53 0%, #555b63 55%, #61656c 100%);
+    --grad2: linear-gradient(135deg, #555b63 0%, #454a53 100%);
+    --glow: 0 8px 32px rgba(62, 69, 80, .3);
+  }#liq-root.light .brand h1.wordmark, #liq-root.light .aboutWord { text-shadow: 0 0 8px rgba(29, 122, 50, .26), 0 0 22px rgba(29, 122, 50, .16); }#liq-root.light .brandLogo polygon { fill-opacity: .16; }#liq-root.light .aboutRule { background: linear-gradient(90deg, transparent, rgba(29, 122, 50, .55), transparent); }#liq-root.light header.topbar { background: rgba(250, 250, 255, .88); }#liq-root.light .stage-wrap {
+    background: radial-gradient(1200px 600px at 50% 0%, rgba(255, 255, 255, .92), rgba(238, 240, 249, .92));
+    box-shadow: 0 10px 30px rgba(30, 35, 80, .10);
+  }#liq-root.light details.card { box-shadow: 0 10px 30px rgba(30, 35, 80, .10); }#liq-root.light canvas#stageCanvas { box-shadow: 0 14px 40px rgba(30, 35, 80, .22); }#liq-root.light .modal { background: rgba(24, 28, 56, .42); }#liq-root.light .bar { background: rgba(25, 32, 72, .12); }#liq-root.light .menuPanel { box-shadow: 0 24px 60px rgba(30, 35, 80, .3); }#liq-root.light select.sel {
+    background-image: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 12 8'><path d='M1 1l5 5 5-5' fill='none' stroke='%233e4550' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'/></svg>");
+  }#liq-root.light .dropzone h2, #liq-root.light .modalHead h2 { color: var(--text); }#liq-root.light .menuPanel button:hover, #liq-root.light button:hover { background: rgba(25, 32, 72, .08); }#liq-root.light details.card > summary:hover { background: rgba(25, 32, 72, .06); }#liq-root.light .layerRow .layerOn:hover, #liq-root.light .layerRow .layerTool:hover { background: rgba(25, 32, 72, .08); }#liq-root.light .layerRow.active .layerName { color: var(--text); }#liq-root.light .layerRow.active .chip { color: #1d5f70; border-color: var(--border2); }#liq-root.light .layerRow.active .layerOn, #liq-root.light .layerRow.active .layerTool { color: var(--accent2); }#liq-root.light .layerRow.active .badge { color: var(--accent); }#liq-root.light .layerRow .layerOn { filter: brightness(.72) saturate(1.35); }#liq-root.light button.menuBtn { border-color: rgba(29, 122, 50, .5); background: rgba(29, 122, 50, .07); }#liq-root.light button.menuBtn:hover { border-color: rgba(29, 122, 50, .9); background: rgba(29, 122, 50, .13); box-shadow: 0 0 14px rgba(29, 122, 50, .25); }#liq-root.light button.menuBtn.active { background: rgba(29, 122, 50, .16); border-color: rgba(29, 122, 50, .95); box-shadow: 0 0 16px rgba(29, 122, 50, .3); }#liq-root.light input[type=text]:focus, #liq-root.light input[type=password]:focus, #liq-root.light input[type=number]:focus, #liq-root.light select.sel:focus { box-shadow: 0 0 0 3px rgba(14, 116, 144, .16); }#liq-root.light .libTable td, #liq-root.light .kvRow { border-color: rgba(25, 32, 72, .08); }#liq-root.light .toast { box-shadow: 0 18px 50px rgba(30, 35, 80, .26); }#liq-root.light .tag.bad { color: #c0392b; border-color: rgba(192, 57, 43, .45); }#liq-root.light ::selection { background: rgba(244, 63, 142, .22); }

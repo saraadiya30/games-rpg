@@ -1,0 +1,869 @@
+/* ============================================================================
+   Living World — RPG shell (UI ONLY)
+   - Tidak mengubah logika game, data, save, atau AI. Hanya presentasi.
+   - Semua id/class/data-attribute lama dipertahankan (wd-subtabs, wd-hud,
+     wd-tiles, wd-enc, wd-feed, wd-qstrip, wd-msg, wd-dpad, dst).
+   - File ini menimpa tampilan lewat spesifisitas #world-app (dimuat SETELAH
+     #wd-style sehingga menang tanpa !important berlebihan).
+   - Tema mengikuti variabel tema studio (--th-*) dengan fallback fantasi gelap.
+   ========================================================================== */
+
+/* ---- 1. Mode game penuh: sembunyikan chrome studio saat di tab world ---- */
+body.wd-game-active {
+  overflow: hidden; /* satu layar game tetap, tanpa scroll halaman */
+}
+/* Studio menyisakan 72px buat nav bawah — tapi nav itu disembunyikan saat main,
+   jadi ruangnya dikembalikan ke game (tanpa ini ada kosong 72px di bawah). */
+body.wd-game-active.is-android-mobile #world-app { padding-bottom: 0; }
+body.wd-game-active #i2p-header,
+body.wd-game-active #i2p-tabs,
+body.wd-game-active #i2p-simplebar,
+body.wd-game-active #i2p-scrollprog,
+body.wd-game-active #ui-scroll-progress,
+body.wd-game-active #ui-backtop,
+body.wd-game-active #i2p-ui-hint,
+body.wd-game-active #i2p-bottomnav,
+body.wd-game-active #i2p-bnsheet,
+body.wd-game-active #i2p-bnsheet-scrim,
+body.wd-game-active #i2p-bnpop,
+body.wd-game-active #i2p-bnpop-scrim {
+  display: none !important;
+}
+
+/* ---- 2. Panggung game: satu viewport, kolom vertikal ---- */
+#world-app.wd-rpg {
+  position: fixed;
+  inset: 0;
+  z-index: 60;
+  max-width: none;
+  height: 100vh;
+  height: 100dvh;
+  margin: 0;
+  padding: 0;
+  overflow: hidden;
+  text-align: left;
+  display: flex;
+  flex-direction: column;
+  color: var(--th-text, #e8e2d5);
+  background:
+    radial-gradient(120% 90% at 50% -10%, rgba(122, 63, 255, 0.16), transparent 60%),
+    radial-gradient(100% 70% at 50% 110%, rgba(255, 92, 157, 0.08), transparent 60%),
+    linear-gradient(180deg, #14101d 0%, #0e0c14 55%, #0a090e 100%);
+  font-family: var(--th-font, "Plus Jakarta Sans", system-ui, sans-serif);
+}
+#world-app.wd-rpg::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  background: radial-gradient(80% 60% at 50% 40%, transparent 55%, rgba(0, 0, 0, 0.5) 100%);
+  z-index: 0;
+}
+/* Konteks posisi hanya untuk panel in-flow (menu/nav/drawer punya aturannya sendiri) */
+#world-app.wd-rpg > #wd-subtabs,
+#world-app.wd-rpg > #wd-pane-adventure,
+#world-app.wd-rpg > #wd-pane-party,
+#world-app.wd-rpg > #wd-pane-world,
+#world-app.wd-rpg > #wd-pane-god {
+  position: relative;
+  z-index: 1;
+}
+
+/* Tombol kembali ke studio */
+#world-app.wd-rpg > #wd-menu {
+  position: absolute;
+  top: calc(8px + env(safe-area-inset-top));
+  left: 8px;
+  right: auto;
+  z-index: 90;
+  width: auto;
+  min-width: 44px;
+  min-height: 44px;
+  padding: 0.5rem 0.8rem;
+  border-radius: 12px;
+  border: 1px solid var(--th-border, #3a3348);
+  background: rgba(20, 16, 29, 0.9);
+  color: var(--th-text, #e8e2d5);
+  font: inherit;
+  font-size: 0.85rem;
+  font-weight: 700;
+  cursor: pointer;
+  backdrop-filter: blur(6px);
+}
+#wd-menu:hover { border-color: var(--th-accent, #a855f7); }
+
+/* ---- 3. Bar atas: judul area + HUD ringkas ---- */
+#world-app.wd-rpg #wd-subtabs {
+  position: static;
+  display: flex;
+  align-items: center;
+  gap: 0.35rem;
+  flex-wrap: nowrap;
+  overflow-x: auto;
+  margin: 0;
+  padding: calc(8px + env(safe-area-inset-top)) 0.5rem 0.4rem 64px; /* ruang #wd-menu */
+  background: linear-gradient(180deg, rgba(10, 8, 14, 0.95), rgba(10, 8, 14, 0.75));
+  border: 0;
+  border-bottom: 1px solid var(--th-border, #3a3348);
+  border-radius: 0;
+  scrollbar-width: none;
+}
+#world-app.wd-rpg #wd-subtabs::-webkit-scrollbar { display: none; }
+#world-app.wd-rpg .wd-subtab {
+  flex: 0 0 auto;
+  min-height: 44px;
+  font-size: 0.78rem;
+  padding: 0.4rem 0.7rem;
+}
+#world-app.wd-rpg .wd-modepill {
+  margin-left: auto;
+  flex: 0 0 auto;
+  font-size: 0.72rem;
+  gap: 0.25rem;
+}
+#world-app.wd-rpg .wd-modepill .wd-mini { min-height: 32px; min-width: 36px; }
+
+/* Judul area (dibuat JS, baca dari select/bar peta — tanpa ubah data) */
+.wd-area-title {
+  display: flex;
+  align-items: baseline;
+  gap: 0.5rem;
+  padding: 0.45rem 0.8rem 0;
+  font-family: Cinzel, "Playfair Display", serif;
+  letter-spacing: 0.02em;
+}
+.wd-area-title b {
+  font-size: 1.02rem;
+  font-weight: 700;
+  color: var(--th-text, #f3ead8);
+  text-shadow: 0 2px 12px rgba(0, 0, 0, 0.7);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+.wd-area-title span {
+  font-family: var(--th-font, inherit);
+  font-size: 0.72rem;
+  opacity: 0.8;
+  white-space: nowrap;
+}
+
+/* HUD ringkas: 2 baris kompak, bukan deretan pill */
+#world-app.wd-rpg .wd-hud {
+  margin: 0.35rem 0.6rem 0.45rem;
+  padding: 0.45rem 0.55rem;
+  gap: 0.3rem;
+  background:
+    linear-gradient(135deg, rgba(168, 85, 247, 0.12), transparent 55%),
+    var(--th-surface, rgba(24, 19, 34, 0.92));
+  border: 1px solid var(--th-accent, #7c5cd6);
+  border-radius: 14px;
+  box-shadow: inset 0 0 0 1px rgba(0, 0, 0, 0.35), 0 6px 22px -12px rgba(0, 0, 0, 0.8);
+  outline: 1px solid rgba(0, 0, 0, 0.4);
+  outline-offset: -4px;
+}
+#world-app.wd-rpg .wd-hudtop {
+  display: flex;
+  align-items: center;
+  gap: 0.4rem;
+  flex-wrap: wrap;
+  font-size: 0.74rem;
+}
+#world-app.wd-rpg .wd-lvbadge {
+  font-size: 0.74rem;
+  padding: 0.15rem 0.6rem;
+  border-color: var(--th-accent, #a855f7);
+  background: rgba(168, 85, 247, 0.16);
+}
+#world-app.wd-rpg .wd-xpwrap { flex: 1 1 120px; min-width: 110px; gap: 0.3rem; }
+#world-app.wd-rpg .wd-xpbar { height: 8px; }
+#world-app.wd-rpg .wd-xpbar i,
+#world-app.wd-rpg .wd-bar i,
+#world-app.wd-rpg .wd-sbar i,
+#world-app.wd-rpg .wd-enchp i {
+  animation: wdBarShimmer 2.4s linear infinite;
+  background-size: 200% 100%;
+}
+@keyframes wdBarShimmer {
+  0% { filter: brightness(1); }
+  50% { filter: brightness(1.18); }
+  100% { filter: brightness(1); }
+}
+#world-app.wd-rpg .wd-xpnum { font-size: 0.68rem; }
+#world-app.wd-rpg .wd-goal {
+  flex-basis: 100%;
+  font-size: 0.66rem;
+  opacity: 0.75;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+#world-app.wd-rpg .wd-stats {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 0.3rem;
+}
+#world-app.wd-rpg .wd-stat {
+  padding: 0.22rem 0.35rem;
+  font-size: 0.68rem;
+  border-radius: 8px;
+  min-width: 0;
+}
+#world-app.wd-rpg .wd-stat .wd-sbar { height: 6px; }
+#world-app.wd-rpg .wd-bagbtn {
+  font-size: 0.72rem;
+  padding: 0.3rem 0.5rem;
+  min-height: 36px;
+}
+/* Sembunyikan tombol tas inline (pindah ke nav bawah) — id tetap ada */
+#world-app.wd-rpg #wd-invbtn { display: none; }
+
+/* ---- 4. Peta sebagai fokus utama ---- */
+#world-app.wd-rpg #wd-pane-adventure {
+  flex: 1;
+  min-height: 0;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+}
+#world-app.wd-rpg #wd-pane-adventure .wd-card {
+  position: relative; /* jangkar judul area melayang */
+  flex: 1;
+  min-height: 0;
+  display: flex;
+  flex-direction: column;
+  margin: 0;
+  padding: 0;
+  border: 0;
+  border-radius: 0;
+  background: transparent;
+  overflow: hidden;
+}
+/* Judul area melayang di atas peta (hemat ~38px, tanpa nutup input: tembus klik) */
+#world-app.wd-rpg .wd-area-title {
+  flex: 0 0 auto;
+  position: absolute;
+  top: 6px;
+  left: 10px;
+  z-index: 5;
+  pointer-events: none;
+  padding: 0.15rem 0.6rem;
+  background: rgba(10, 8, 14, 0.72);
+  border: 1px solid var(--th-border, #3a3348);
+  border-radius: 999px;
+}
+#world-app.wd-rpg .wd-area-title b { font-size: 0.8rem; }
+#world-app.wd-rpg #wd-pane-adventure .wd-card > h3,
+#world-app.wd-rpg .wd-stagehead,
+#world-app.wd-rpg details.wd-sect,      /* quest strip pindah ke drawer */
+#world-app.wd-rpg details.wd-minihelp,
+#world-app.wd-rpg .wd-utilrow {
+  display: none !important; /* disembunyikan visual; node tetap di DOM */
+}
+#world-app.wd-rpg .wd-screen {
+  margin: 0.1rem 0.6rem 0;
+  border: 2px solid var(--th-accent, #7c5cd6);
+  border-radius: 16px;
+  overflow: hidden;
+  display: flex;
+  flex-direction: column;
+  background: #0c110a;
+  box-shadow: 0 10px 30px -12px rgba(0, 0, 0, 0.8), inset 0 0 0 1px rgba(0, 0, 0, 0.5);
+  flex: 1 1 auto; /* peta = prioritas: isi semua sisa layar */
+  min-height: 0;
+}
+#world-app.wd-rpg #wd-tiles { display: block; }
+#world-app.wd-rpg #wd-tiles {
+  flex: 1 1 auto;
+  min-height: 120px; /* peta tak boleh kegencet kartu battle sampai hilang */
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+}
+#world-app.wd-rpg .wd-tiles {
+  border: 0;
+  border-radius: 0;
+  flex: 1 1 auto;
+  min-height: 0;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+}
+#world-app.wd-rpg .wd-tiles-grid {
+  grid-template-columns: repeat(9, minmax(0, 1fr));
+  width: 100%;
+  max-width: 520px;
+  min-width: 0;
+  gap: 4px;
+  padding: 8px;
+  margin: 0 auto;
+  flex: 1 1 auto;
+  min-height: 0;
+  overflow-y: auto;
+}
+#world-app.wd-rpg .wd-tile { font-size: clamp(18px, 6vw, 30px); }
+/* D-pad nyaman disentuh */
+#world-app.wd-rpg .wd-tiles-bar {
+  flex: 0 0 auto;
+  align-items: center;
+  gap: 0.3rem;
+  font-size: 0.68rem;
+  padding: 0.3rem 0.45rem calc(0.3rem + env(safe-area-inset-bottom) * 0);
+}
+/* Layar kecil: gambar monster battle dirampingkan biar kartu muat tanpa scroll */
+@media (max-width: 767px) {
+  #world-app.wd-rpg.is-battle .wd-enc .wd-monimg { width: 84px; height: 84px; }
+}
+#world-app.wd-rpg .wd-tiles-legend { display: none; } /* ringkas: legenda hanya via title */
+#world-app.wd-rpg .wd-dpad {
+  margin-left: auto;
+  display: flex;
+  gap: 0.3rem;
+}
+#world-app.wd-rpg .wd-dpad button {
+  width: 42px;
+  height: 42px;
+  font-size: 0.95rem;
+  border-radius: 12px;
+}
+/* Bar toko kilat: SELALU setinggi 1 baris + scroll-x bila tombol banyak.
+   Tanpa ini tiap melangkah melewati radius penjual bar muncul/hilang/wrap →
+   tinggi .wd-stickfoot berubah → feed/dialog di atasnya ikut membesar-mengecil. */
+#world-app.wd-rpg #wd-shops {
+  display: flex !important; /* timpa display:none logika saat kosong: ruang tetap dipesan */
+  flex: 0 0 auto;
+  flex-wrap: nowrap;
+  overflow-x: auto;
+  scrollbar-width: none;
+  min-height: 32px;
+  align-items: center;
+  margin-top: 0.4rem;
+}
+#world-app.wd-rpg #wd-shops::-webkit-scrollbar { display: none; }
+#world-app.wd-rpg #wd-shops:empty::after {
+  content: "🏪 dekati penjual untuk belanja cepat";
+  font-size: 0.68rem;
+  opacity: 0.55;
+  white-space: nowrap;
+}
+/* Bar NPC sebelahan: sama — tombol tak boleh wrap mendorong peta. */
+#world-app.wd-rpg .wd-tiles-bar { flex-wrap: nowrap; }
+#world-app.wd-rpg .wd-nearby {
+  flex-wrap: nowrap;
+  overflow-x: auto;
+  scrollbar-width: none;
+  max-width: 100%;
+}
+#world-app.wd-rpg .wd-nearby::-webkit-scrollbar { display: none; }
+
+/* ---- 5. Kotak dialog RPG + aksi ---- */
+.wd-dlg-tabs {
+  display: flex;
+  gap: 0.3rem;
+  margin: 0.45rem 0.6rem 0;
+  align-items: center;
+  flex: 0 0 auto;
+}
+.wd-dlg-tabs button {
+  font: inherit;
+  font-size: 0.74rem;
+  font-weight: 700;
+  min-height: 44px;
+  padding: 0.4rem 0.8rem;
+  border-radius: 999px;
+  border: 1px solid var(--th-border, #3a3348);
+  background: rgba(24, 19, 34, 0.9);
+  color: inherit;
+  cursor: pointer;
+}
+.wd-dlg-tabs button.on {
+  background: var(--th-accent, #7c5cd6);
+  border-color: var(--th-accent, #7c5cd6);
+  color: var(--th-accent-text, #fff);
+}
+.wd-dlg-tabs .wd-dlg-count { font-weight: 400; opacity: 0.8; font-size: 0.68rem; }
+/* Tombol bantuan di barisan tab dialog */
+.wd-dlg-tabs [data-helpbtn] { margin-left: auto; min-width: 44px; }
+/* Isi panel bantuan: kartu pesan biasa, judul grup tebal */
+#wd-help-list { display: flex; flex-direction: column; gap: 0.4rem; }
+#wd-help-list .wd-msg { font-size: 0.78rem; }
+
+#world-app.wd-rpg #wd-feed {
+  display: flex;
+  flex-direction: column;
+  gap: 0.4rem;
+  overflow-y: auto;
+  margin: 0.35rem 0.6rem 0;
+  padding: 0.55rem 0.6rem;
+  flex: 0 1 auto; /* jangan rebut ruang peta; maks 26dvh, scroll dalam bila panjang */
+  min-height: 44px;
+  max-height: 26vh;
+  max-height: 26dvh;
+  border: 2px solid var(--th-accent, #7c5cd6);
+  border-radius: 14px;
+  background:
+    linear-gradient(180deg, rgba(20, 14, 30, 0.96), rgba(12, 9, 18, 0.96));
+  box-shadow: inset 0 0 0 1px rgba(0, 0, 0, 0.4);
+}
+/* Saluran: dialog hanya chat; jurnal hanya sistem/dewa */
+#world-app.wd-rpg #wd-feed.show-dialog .wd-msg.sys,
+#world-app.wd-rpg #wd-feed.show-dialog .wd-msg.godmsg {
+  display: none !important;
+}
+#world-app.wd-rpg #wd-feed.show-journal .wd-msg:not(.sys):not(.godmsg) {
+  display: none !important;
+}
+#world-app.wd-rpg .wd-msg {
+  border-radius: 12px;
+  border: 1px solid var(--th-border, #3a3348);
+  background: rgba(255, 255, 255, 0.04);
+  font-size: 0.82rem;
+}
+/* Gaya visual-novel saat saluran dialog */
+#world-app.wd-rpg #wd-feed.show-dialog .wd-msg:not(.sys) {
+  border-color: var(--th-accent, #7c5cd6);
+  background: linear-gradient(180deg, rgba(168, 85, 247, 0.1), rgba(255, 255, 255, 0.03));
+}
+/* Saluran kosong (semua pesan terfilter): ramping + hint, bukan kotak kosong */
+#world-app.wd-rpg #wd-feed.is-empty { min-height: 0; }
+#world-app.wd-rpg #wd-feed.is-empty::after {
+  content: attr(data-empty);
+  font-size: 0.72rem;
+  opacity: 0.6;
+  text-align: center;
+  padding: 0.15rem 0.3rem;
+}
+#world-app.wd-rpg #wd-feed.show-dialog .wd-msg .wd-who {
+  display: inline-block;
+  font-size: 0.7rem;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  background: var(--th-accent, #7c5cd6);
+  color: var(--th-accent-text, #fff);
+  border-radius: 7px;
+  padding: 0.1rem 0.5rem;
+  margin-bottom: 0.25rem;
+}
+#world-app.wd-rpg #wd-feed.show-dialog .wd-msg.mine {
+  border-style: solid;
+  background: rgba(46, 204, 113, 0.07);
+}
+#world-app.wd-rpg #wd-feed.show-dialog .wd-msg.mine .wd-who {
+  background: #2ecc71;
+  color: #06130c;
+}
+#world-app.wd-rpg .wd-msg.sys {
+  border-style: dashed;
+  font-size: 0.76rem;
+}
+/* Tandai pesan battle (ditambah JS, murni kelas bantu) */
+#world-app.wd-rpg .wd-msg.is-battle { border-color: #c0392b; }
+
+/* Log battle mini: hanya saat battle */
+#wd-battlelog {
+  margin: 0.35rem 0.6rem 0;
+  padding: 0.4rem 0.55rem;
+  max-height: 88px;
+  overflow-y: auto;
+  font-size: 0.74rem;
+  line-height: 1.45;
+  border: 1px solid #c0392b;
+  border-radius: 12px;
+  background: rgba(40, 10, 10, 0.9);
+  flex: 0 0 auto;
+}
+#wd-battlelog:empty { display: none; }
+#world-app:not(.is-battle) #wd-battlelog { display: none; }
+#wd-battlelog div { padding: 0.1rem 0; border-bottom: 1px dashed rgba(255, 255, 255, 0.12); }
+#wd-battlelog div:last-child { border-bottom: 0; }
+
+/* Action bar gaya perintah RPG */
+#world-app.wd-rpg .wd-stickfoot {
+  position: static;
+  background: transparent;
+  border: 0;
+  padding: 0.4rem 0.6rem; /* nav sudah in-flow, tak perlu ruang overlay */
+  margin: 0;
+  flex: 0 1 auto;
+  min-height: 0;
+  max-height: 32vh;
+  max-height: 32dvh;
+  overflow-y: auto;
+}
+#world-app.wd-rpg .wd-actionbar {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 0.4rem;
+}
+#world-app.wd-rpg .wd-abtn {
+  min-height: 48px;
+  font-size: 0.8rem;
+  border-radius: 12px;
+  border: 1px solid var(--th-border, #3a3348);
+  background: linear-gradient(180deg, rgba(255, 255, 255, 0.07), rgba(0, 0, 0, 0.25)), var(--th-field, #1d1829);
+  box-shadow: 0 3px 0 rgba(0, 0, 0, 0.45);
+}
+#world-app.wd-rpg .wd-abtn:active { transform: translateY(2px); box-shadow: none; }
+#world-app.wd-rpg .wd-talk { margin-top: 0.4rem; gap: 0.35rem; }
+#world-app.wd-rpg .wd-talk .wd-in,
+#world-app.wd-rpg .wd-talk .wd-sel { min-height: 44px; font-size: 0.85rem; }
+/* iOS Safari auto-zoom tiap input disentuh bila font < 16px → UI kelihatan
+   membesar-mengecil sendiri. Kunci 16px untuk semua kolom ketik/pilih. */
+#world-app.wd-rpg .wd-talk .wd-in,
+#world-app.wd-rpg .wd-talk .wd-sel,
+#world-app.wd-rpg .wd-spellsel,
+#world-app.wd-rpg #wd-narr,
+#world-app.wd-rpg #wd-say { font-size: max(16px, 0.85rem); }
+#world-app.wd-rpg .wd-talk .wd-kind { min-width: 96px; }
+#world-app.wd-rpg .wd-send { min-height: 44px; }
+#world-app.wd-rpg .wd-spellsel { min-height: 44px; }
+
+/* ---- 6. Mode battle terpisah ---- */
+#world-app.wd-rpg .wd-enc {
+  border: 0;
+  border-top: 2px solid #c0392b;
+  border-radius: 0;
+  margin: 0;
+  background: linear-gradient(180deg, rgba(120, 20, 20, 0.35), rgba(12, 8, 8, 0.97));
+  /* Dikunci: kartu battle scroll dalam sendiri, peta di atasnya ukurannya stabil.
+     Tanpa ini map menciut/melebar tiap gambar monster muncul & tiap giliran. */
+  flex: 0 0 auto;
+  min-height: 0;
+  max-height: 60%;
+  overflow-y: auto;
+}
+/* Pas battle peta jadi strip kompak (jalan/toel tetap bisa, travel dikunci);
+   kartu battle yang jadi fokus. Proporsi dikunci biar stabil tiap giliran. */
+#world-app.wd-rpg.is-battle #wd-tiles { min-height: 72px; }
+#world-app.wd-rpg.is-battle .wd-screen {
+  border-color: #c0392b;
+  box-shadow: 0 0 0 1px #c0392b, 0 0 34px -6px rgba(192, 57, 43, 0.65);
+}
+#world-app.wd-rpg.is-battle .wd-screen::after {
+  content: "⚔️ BATTLE";
+  position: absolute;
+  top: 8px;
+  right: 10px;
+  font-size: 0.7rem;
+  font-weight: 800;
+  letter-spacing: 0.08em;
+  color: #ffb4a8;
+  background: rgba(192, 57, 43, 0.85);
+  border-radius: 999px;
+  padding: 0.15rem 0.6rem;
+}
+#world-app.wd-rpg.is-battle #wd-tiles { opacity: 1; filter: none; }
+#world-app.wd-rpg.is-battle .wd-enc .wd-monimg {
+  width: 120px;
+  height: 120px;
+}
+#world-app.wd-rpg.is-battle .wd-actionbar {
+  grid-template-columns: repeat(2, 1fr);
+}
+#world-app.wd-rpg.is-battle .wd-actionbar .wd-abtn.fight { order: 1; }
+#world-app.wd-rpg.is-battle .wd-actionbar .wd-spellsel { order: 2; }
+#world-app.wd-rpg.is-battle .wd-actionbar .wd-abtn.magic { order: 3; }
+#world-app.wd-rpg.is-battle .wd-actionbar #wd-act-flee { order: 4; }
+#world-app.wd-rpg.is-battle .wd-actionbar #wd-act-sleep,
+#world-app.wd-rpg.is-battle .wd-actionbar #wd-act-status { order: 5; }
+
+/* ---- 7. Navigasi bawah (mobile) / sidebar (desktop) ---- */
+.wd-rpg-nav {
+  /* In-flow (bukan overlay): tidak akan pernah meniban tombol aksi/feed.
+     #world-app kolom = subtabs + pane(flex:1) + nav ini. */
+  position: static;
+  z-index: 70;
+  flex: 0 0 auto;
+  display: flex;
+  gap: 0.3rem;
+  padding: 0.4rem 0.6rem calc(0.5rem + env(safe-area-inset-bottom));
+  background: linear-gradient(0deg, rgba(8, 6, 12, 1), rgba(8, 6, 12, 0.94));
+  border-top: 1px solid var(--th-border, #3a3348);
+}
+.wd-rpg-nav button {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0.1rem;
+  min-height: 52px;
+  padding: 0.3rem 0.2rem;
+  border-radius: 12px;
+  border: 1px solid transparent;
+  background: transparent;
+  color: var(--th-text, #e8e2d5);
+  font: inherit;
+  font-size: 0.62rem;
+  font-weight: 700;
+  cursor: pointer;
+}
+.wd-rpg-nav button span.i { font-size: 1.25rem; line-height: 1; }
+.wd-rpg-nav button.on { border-color: var(--th-accent, #a855f7); background: rgba(168, 85, 247, 0.14); }
+.wd-rpg-nav button:hover { border-color: var(--th-accent, #a855f7); }
+
+/* ---- 8. Drawer / panel ---- */
+.wd-drawer-scrim {
+  position: absolute;
+  inset: 0;
+  z-index: 71;
+  background: rgba(0, 0, 0, 0.55);
+}
+.wd-drawer-scrim[hidden] { display: none; }
+.wd-drawer {
+  position: absolute;
+  z-index: 72;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  max-height: 72vh;
+  max-height: 72dvh;
+  display: flex;
+  flex-direction: column;
+  background: var(--th-modal, #161221);
+  border-top: 2px solid var(--th-accent, #7c5cd6);
+  border-radius: 18px 18px 0 0;
+  box-shadow: 0 -18px 50px -12px rgba(0, 0, 0, 0.8);
+  overflow: hidden;
+}
+.wd-drawer[hidden] { display: none; }
+#world-app.wd-rpg [data-wgoto]:disabled,
+#world-app.wd-rpg [data-go]:disabled {
+  opacity: 0.45;
+  cursor: not-allowed;
+}
+.wd-drawer-head {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 0.55rem 0.8rem;
+  border-bottom: 1px solid var(--th-border, #3a3348);
+  font-weight: 800;
+  font-size: 0.88rem;
+}
+.wd-drawer-head button {
+  margin-left: auto;
+  min-width: 44px;
+  min-height: 44px;
+  border-radius: 10px;
+  border: 1px solid var(--th-border, #3a3348);
+  background: transparent;
+  color: inherit;
+  font: inherit;
+  cursor: pointer;
+}
+.wd-drawer-body {
+  padding: 0.6rem 0.8rem calc(1rem + env(safe-area-inset-bottom));
+  overflow-y: auto;
+  min-height: 0;
+}
+/* Quest di dalam drawer: tampil vertikal, bukan strip */
+#wd-drawer-quest .wd-qstrip {
+  display: flex;
+  flex-direction: column;
+  align-items: stretch;
+  overflow: visible;
+  margin: 0;
+  gap: 0.5rem;
+}
+#wd-drawer-quest .wd-qstrip .wd-q { max-width: none; }
+#wd-drawer-quest .wd-q {
+  font-size: 0.84rem;
+  padding: 0.55rem 0.65rem;
+  border-radius: 12px;
+}
+#wd-drawer-quest .wd-mini,
+#wd-drawer-journal .wd-mini {
+  min-height: 44px;
+  padding: 0.4rem 0.9rem;
+  font-size: 0.8rem;
+}
+/* Jurnal: daftar sistem/dunia */
+#wd-journal-list { display: flex; flex-direction: column; gap: 0.4rem; }
+#wd-journal-list .wd-msg { font-size: 0.8rem; }
+
+/* Party / Dunia / Dewa sebagai drawer di atas peta (node asli, hanya digaya) */
+#world-app.wd-rpg #wd-pane-party:not([hidden]),
+#world-app.wd-rpg #wd-pane-world:not([hidden]),
+#world-app.wd-rpg #wd-pane-god:not([hidden]) {
+  position: absolute;
+  z-index: 72;
+  inset: auto 0 0 0;
+  max-height: 74vh;
+  max-height: 74dvh;
+  overflow-y: auto;
+  background: var(--th-modal, rgba(18, 14, 28, 0.98));
+  border-top: 2px solid var(--th-accent, #7c5cd6);
+  border-radius: 18px 18px 0 0;
+  padding: 0.6rem 0.7rem calc(1rem + env(safe-area-inset-bottom));
+  box-shadow: 0 -18px 50px -12px rgba(0, 0, 0, 0.8);
+}
+#world-app.wd-rpg #wd-pane-party .wd-card,
+#world-app.wd-rpg #wd-pane-world .wd-card,
+#world-app.wd-rpg #wd-pane-god .wd-card {
+  background: var(--th-surface, #1d1829);
+}
+
+/* Shop/inventory overlay tetap di atas drawer */
+.wd-shop { z-index: 85; }
+
+/* Toast kecil untuk pesan dunia */
+#world-app.wd-rpg .wd-toast {
+  bottom: auto;
+  top: calc(64px + env(safe-area-inset-top));
+  font-size: 0.78rem;
+  background: rgba(18, 14, 28, 0.95);
+  border-color: var(--th-accent, #7c5cd6);
+}
+
+/* ---- 9. Desktop ATAU layar pendek-lebar: sidebar kiri + 2 kolom ----
+   Layar pendek (landscape, preview sempit) tak muat menumpuk peta + aksi +
+   dialog vertikal; pakai kolom ganda seperti desktop. */
+@media (min-width: 1020px), ((max-height: 560px) and (min-width: 600px)) {
+  #world-app.wd-rpg {
+    flex-direction: row;
+  }
+  #world-app.wd-rpg > #wd-subtabs {
+    position: absolute;
+    top: 0;
+    left: 96px;
+    right: 0;
+  }
+  #wd-menu { top: 12px; left: 12px; }
+  .wd-rpg-nav {
+    position: relative;
+    flex-direction: column;
+    justify-content: flex-start;
+    width: 96px;
+    left: auto;
+    right: auto;
+    bottom: auto;
+    order: -1;
+    border-top: 0;
+    border-right: 1px solid var(--th-border, #3a3348);
+    padding-top: calc(64px + env(safe-area-inset-top));
+    gap: 0.45rem;
+  }
+  .wd-rpg-nav button { flex: 0 0 auto; min-height: 64px; }
+  #world-app.wd-rpg #wd-pane-adventure {
+    flex: 1;
+    padding-top: 56px;
+    flex-direction: row;
+    gap: 0.7rem;
+    padding-left: 0.7rem;
+    padding-right: 0.7rem;
+  }
+  #world-app.wd-rpg #wd-pane-adventure .wd-card {
+    display: grid;
+    grid-template-columns: minmax(0, 1.15fr) minmax(320px, 0.85fr);
+    grid-template-rows: auto auto auto auto minmax(0, 1fr) auto;
+    gap: 0.6rem;
+    align-content: start;
+  }
+  #world-app.wd-rpg .wd-area-title { grid-column: 1 / -1; grid-row: 1; position: static; background: none; border: 0; padding: 0.45rem 0.8rem 0; pointer-events: auto; }
+  #world-app.wd-rpg .wd-area-title b { font-size: 1.02rem; }
+  #world-app.wd-rpg .wd-hud { grid-column: 1 / -1; grid-row: 2; }
+  #world-app.wd-rpg .wd-screen { margin: 0; }
+  /* Kolom kanan setinggi peta: feed mengisi sisa (scroll dalam), bukan kotak capped */
+  #world-app.wd-rpg #wd-feed { max-height: none; min-height: 200px; }
+  #world-app.wd-rpg .wd-screen { grid-column: 1; grid-row: 3 / span 4; align-self: stretch; width: 100%; min-height: 0; }
+  #world-app.wd-rpg .wd-dlg-tabs { grid-column: 2; grid-row: 3; margin: 0; }
+  #world-app.wd-rpg #wd-battlelog { grid-column: 2; grid-row: 4; margin: 0; max-height: 88px; }
+  #world-app.wd-rpg #wd-feed { grid-column: 2; grid-row: 5; margin: 0; min-height: 0; }
+  #world-app.wd-rpg .wd-stickfoot { grid-column: 2; grid-row: 6; margin: 0; padding-bottom: 0.55rem; max-height: none; }
+  #world-app.wd-rpg .wd-stickfoot { padding-bottom: 0.55rem; }
+  #world-app.wd-rpg #wd-pane-party:not([hidden]),
+  #world-app.wd-rpg #wd-pane-world:not([hidden]),
+  #world-app.wd-rpg #wd-pane-god:not([hidden]) {
+    inset: 56px 0 0 auto;
+    width: min(430px, 38vw);
+    border-top: 0;
+    border-left: 2px solid var(--th-accent, #7c5cd6);
+    border-radius: 0;
+    max-height: none;
+  }
+  .wd-drawer {
+    left: auto;
+    right: 0;
+    bottom: 0;
+    top: 56px;
+    width: min(430px, 38vw);
+    max-height: none;
+    border-top: 0;
+    border-left: 2px solid var(--th-accent, #7c5cd6);
+    border-radius: 0;
+  }
+  .wd-drawer-scrim { left: 96px; }
+}
+
+/* Layar pendek-lebar: ketatkan kolom kanan agar muat tanpa scroll kartu */
+@media ((max-height: 560px) and (min-width: 600px)) and (max-width: 1019px) {
+  #world-app.wd-rpg #wd-pane-adventure { padding-top: 52px; }
+  #world-app.wd-rpg #wd-feed { max-height: 24vh; max-height: 24dvh; }
+  #world-app.wd-rpg .wd-stickfoot { max-height: 30vh; max-height: 30dvh; overflow-y: auto; }
+  #world-app.wd-rpg .wd-screen { min-height: 0; }
+  #world-app.wd-rpg.is-battle .wd-enc .wd-monimg { width: 84px; height: 84px; }
+}
+
+/* HP kecil: HUD strip kompak 2 baris + subtab ramping (hemat ~80px buat peta) */
+@media (max-width: 767px) {
+  #world-app.wd-rpg > #wd-subtabs { padding: calc(4px + env(safe-area-inset-top)) 0.4rem 0.3rem 60px; }
+  #world-app.wd-rpg .wd-subtab { min-height: 44px; font-size: 0.72rem; padding: 0.3rem 0.6rem; }
+  #world-app.wd-rpg .wd-hud { margin: 0.25rem 0.5rem; padding: 0.3rem 0.45rem; gap: 0.2rem; }
+  #world-app.wd-rpg .wd-hudtop { font-size: 0.68rem; gap: 0.3rem; }
+  #world-app.wd-rpg .wd-xpbar { height: 6px; }
+  #world-app.wd-rpg .wd-goal { font-size: 0.6rem; }
+  #world-app.wd-rpg .wd-stats { grid-template-columns: repeat(4, 1fr); gap: 0.2rem; }
+  #world-app.wd-rpg .wd-stat { font-size: 0.6rem; padding: 0.12rem 0.2rem; }
+  #world-app.wd-rpg .wd-stat .wd-sbar { height: 4px; }
+  #world-app.wd-rpg .wd-bagbtn {
+    font-size: 0.66rem;
+    min-height: 32px;
+    padding: 0.2rem 0.4rem;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+  }
+  /* Damai: aksi sebaris scroll-x (hemat 1 baris); battle tetap grid 2 kolom */
+  #world-app.wd-rpg:not(.is-battle) .wd-actionbar { display: flex; overflow-x: auto; }
+  #world-app.wd-rpg:not(.is-battle) .wd-abtn { flex: 0 0 auto; min-width: 96px; }
+  /* Bar peta boleh geser horizontal bila tombol nama + dpad mepet (tanpa wrap) */
+  #world-app.wd-rpg .wd-tiles-bar { overflow-x: auto; scrollbar-width: none; }
+  #world-app.wd-rpg .wd-tiles-bar::-webkit-scrollbar { display: none; }
+  #world-app.wd-rpg #wd-feed { font-size: 0.78rem; gap: 0.3rem; padding: 0.45rem 0.5rem; max-height: 100px; min-height: 52px; }
+  #world-app.wd-rpg .wd-dlg-tabs { margin: 0.35rem 0.6rem 0; }
+  #world-app.wd-rpg .wd-tiles-grid { gap: 3px; padding: 6px; }
+  #world-app.wd-rpg .wd-msg { font-size: 0.78rem; }
+  /* Bar peta sebaris tanpa wrap (hemat 1 baris); info lokasi ellipsis */
+  #world-app.wd-rpg .wd-tiles-bar { flex-wrap: nowrap; }
+  #world-app.wd-rpg .wd-tiles-bar > span:first-child {
+    flex: 0 1 auto; min-width: 0; overflow: hidden;
+    text-overflow: ellipsis; white-space: nowrap;
+  }
+  #world-app.wd-rpg .wd-dpad { flex: 0 0 auto; }
+}
+
+/* Kecil: aksi 2 kolom agar tombol tetap besar */
+@media (max-width: 420px) {
+  #world-app.wd-rpg .wd-actionbar { grid-template-columns: repeat(2, 1fr); }
+}
+
+/* Layar pendek (landscape HP): kecilkan ubin + dialog agar muat tanpa scroll dalam */
+@media (max-height: 560px) {
+  #world-app.wd-rpg .wd-tile { font-size: clamp(13px, 4.5vh, 19px); }
+  #world-app.wd-rpg .wd-tiles-grid { gap: 2px; padding: 4px; }
+  #world-app.wd-rpg #wd-feed { max-height: 20vh; max-height: 20dvh; min-height: 52px; }
+  #world-app.wd-rpg .wd-stickfoot { max-height: 34vh; max-height: 34dvh; }
+}
+
+/* Hormati pengurangan gerak */
+@media (prefers-reduced-motion: reduce) {
+  #world-app.wd-rpg .wd-xpbar i,
+  #world-app.wd-rpg .wd-bar i,
+  #world-app.wd-rpg .wd-sbar i,
+  #world-app.wd-rpg .wd-enchp i { animation: none; }
+}
+
+/* Tombol + daftar pencapaian (drawer sendiri, bukan pil goal) */
+#world-app.wd-rpg #wd-achbtn { cursor: pointer; background: rgba(0,0,0,.28); color: inherit; border: 1px solid rgba(255,215,0,.55); border-radius: 999px; padding: 2px 10px; font-size: .78rem; line-height: 1.5; }
+#world-app.wd-rpg #wd-achbtn:active { transform: scale(.96); }
+#world-app.wd-rpg .wd-ach.lock { opacity: .62; }
