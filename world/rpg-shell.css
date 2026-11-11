@@ -903,13 +903,13 @@ body.wd-game-active #i2p-bnpop-scrim {
   /* Command bar dua baris (hanya yg berisi #wd-say; mode dewa di bawah). */
   #world-app.wd-rpg .wd-talk:has(#wd-say) {
     display: grid;
-    grid-template-columns: repeat(2, minmax(0, 1fr)) auto;
+    grid-template-columns: repeat(4, minmax(0, 1fr));
     gap: 0.4rem;
   }
-  #world-app.wd-rpg .wd-talk #wd-target { grid-column: 1; grid-row: 1; min-width: 0; max-width: none !important; }
-  #world-app.wd-rpg .wd-talk #wd-kind { grid-column: 2; grid-row: 1; min-width: 0; }
-  #world-app.wd-rpg .wd-talk #wd-say { grid-column: 1 / 3; grid-row: 2; min-width: 0; }
-  #world-app.wd-rpg .wd-talk #wd-send { grid-column: 3; grid-row: 2; }
+  #world-app.wd-rpg .wd-talk #wd-target { grid-column: 1 / 3; grid-row: 1; min-width: 0; max-width: none !important; }
+  #world-app.wd-rpg .wd-talk #wd-kind { grid-column: 3 / 5; grid-row: 1; min-width: 0; }
+  #world-app.wd-rpg .wd-talk #wd-say { grid-column: 1 / 4; grid-row: 2; min-width: 0; }
+  #world-app.wd-rpg .wd-talk #wd-send { grid-column: 4; grid-row: 2; }
   #world-app.wd-rpg .wd-talk .wd-in,
   #world-app.wd-rpg .wd-talk .wd-sel,
   #world-app.wd-rpg .wd-talk .wd-send,
