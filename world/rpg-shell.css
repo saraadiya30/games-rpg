@@ -720,6 +720,8 @@ body.wd-game-active #i2p-bnpop-scrim {
   background: rgba(18, 14, 28, 0.95);
   border-color: var(--th-accent, #7c5cd6);
 }
+/* Dock toast desktop (dibuat JS): sembunyi di mana-mana kecuali blok desktop. */
+#wd-toasts { display: none; }
 
 /* ---- 9. Desktop ATAU layar pendek-lebar: sidebar kiri + 2 kolom ----
    Layar pendek (landscape, preview sempit) tak muat menumpuk peta + aksi +
@@ -965,6 +967,43 @@ body.wd-game-active #i2p-bnpop-scrim {
     border-radius: 0;
   }
   .wd-drawer-scrim { left: var(--wd-nav-w); }
+  /* Dock toast desktop: kanan atas di bawah HUD, klik tembus. */
+  #wd-toasts {
+    display: flex;
+    flex-direction: column;
+    align-items: flex-end;
+    gap: 6px;
+    position: fixed;
+    top: 64px;
+    right: 12px;
+    width: min(380px, calc(100vw - 96px - 24px));
+    z-index: 600;
+    pointer-events: none;
+  }
+  #wd-toasts:empty { display: none; }
+  #wd-toasts .wd-toast {
+    position: static;
+    transform: none;
+    left: auto;
+    right: auto;
+    bottom: auto;
+    max-width: 100%;
+    text-align: left;
+    border-radius: 10px;
+    font-size: 0.82rem;
+    background: var(--th-modal, rgba(18, 14, 28, 0.96));
+    color: var(--th-text, #e8e2d5);
+    border: 1px solid var(--th-accent, #7c5cd6);
+    box-shadow: 0 6px 18px rgba(0, 0, 0, 0.4);
+    animation: wd-toast-in 160ms ease-out;
+  }
+  @keyframes wd-toast-in {
+    from { opacity: 0; transform: translateX(8px); }
+    to { opacity: 1; transform: none; }
+  }
+  @media (prefers-reduced-motion: reduce) {
+    #wd-toasts .wd-toast { animation: none; }
+  }
 }
 
 /* Layar pendek-lebar: ketatkan kolom kanan agar muat tanpa scroll kartu */

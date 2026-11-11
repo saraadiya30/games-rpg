@@ -653,6 +653,58 @@
     } catch (e) {}
   }
 
+  /* Dock toast desktop: pindahkan .wd-toast anak body ke #wd-toasts.
+     Node DIPINDAHKAN (bukan disalin), jadi timeout bawaan worldsim/shell
+     yang memanggil t.parentNode.removeChild(t) tetap bekerja. Idempotent. */
+  function toastDock() {
+    var d = document.getElementById("wd-toasts");
+    if (!d) {
+      d = document.createElement("div");
+      d.id = "wd-toasts";
+      d.setAttribute("role", "status");
+      d.setAttribute("aria-live", "polite");
+      document.body.appendChild(d);
+    }
+    return d;
+  }
+  function dockToastNode(node) {
+    try {
+      if (!isDesktopLayout()) return; // mobile: biarkan seperti sekarang
+      var dock = toastDock();
+      node.style.bottom = ""; // hapus offset bertingkat inline worldsim
+      dock.appendChild(node);
+      while (dock.children.length > 3) dock.removeChild(dock.firstChild);
+      // Dock tepat di bawah HUD (+8px); bila HUD tak ada/tak terlihat: 64px.
+      var top = 64;
+      try {
+        var hud = document.querySelector("#world-app.wd-rpg .wd-hud");
+        if (hud) {
+          var b = hud.getBoundingClientRect();
+          if (b && b.height > 0 && b.bottom > 0 && b.bottom < window.innerHeight) top = Math.round(b.bottom + 8);
+        }
+      } catch (eH) {}
+      dock.style.top = top + "px";
+    } catch (e) {}
+  }
+  var toastDockWatched = false;
+  function watchToastDock() {
+    if (toastDockWatched) return;
+    toastDockWatched = true;
+    try {
+      toastDock(); // buat sekali di awal (kosong -> CSS :empty menyembunyikan)
+      var bo = new MutationObserver(function (muts) {
+        muts.forEach(function (m) {
+          var nodes = m.addedNodes || [];
+          for (var i = 0; i < nodes.length; i++) {
+            var n = nodes[i];
+            if (n && n.nodeType === 1 && n.classList && n.classList.contains("wd-toast")) dockToastNode(n);
+          }
+        });
+      });
+      bo.observe(document.body, { childList: true });
+    } catch (e) {}
+  }
+
   /* ---------- 4. Quest ke drawer + judul area ---------- */
   function moveQuestStrip() {
     var drawer = $("wd-drawer-quest");
@@ -843,6 +895,7 @@
     window.__wdRpgBootedAt = window.__wdRpgBootedAt || Date.now();
     syncGameMode();
     enhance();
+    watchToastDock();
     var deb = null;
     try {
       var mo = new MutationObserver(function () {
