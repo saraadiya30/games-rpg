@@ -326,7 +326,7 @@
     tabs.innerHTML =
       "<button type='button' data-ch='dialog' class='on'>💬 Dialog</button>" +
       "<button type='button' data-ch='journal'>📖 Jurnal <span class='wd-dlg-count'></span></button>" +
-      "<button type='button' data-helpbtn title='❓ Penjelasan semua tombol'>❓</button>";
+      "<button type='button' data-helpbtn aria-label='Bantuan' title='❓ Penjelasan semua tombol'>❓</button>";
     feed.parentNode.insertBefore(tabs, feed);
     // Log battle mini (di atas feed)
     if (!$("wd-battlelog")) {

@@ -750,9 +750,10 @@ body.wd-game-active #i2p-bnpop-scrim {
     align-items: stretch;
     gap: 2px;
     position: absolute;
-    top: 8px;
+    top: calc((var(--wd-topbar-h) - 40px) / 2);
     right: 12px;
     z-index: 3;
+    box-sizing: border-box;
     height: 40px;
     padding: 3px;
     border-radius: 8px;
@@ -848,7 +849,7 @@ body.wd-game-active #i2p-bnpop-scrim {
     align-content: start;
   }
   #world-app.wd-rpg #wd-pane-adventure .wd-card > .wd-area-title { display: none; }
-  #world-app.wd-rpg .wd-hud { grid-column: 1 / -1; grid-row: 1; margin: 0 0 0.3rem; padding: 0.25rem 0.5rem; gap: 0.25rem; }
+  #world-app.wd-rpg .wd-hud { grid-column: 1 / -1; grid-row: 1; margin: 0.4rem 0 0.3rem; padding: 0.25rem 0.5rem; gap: 0.25rem; }
   #world-app.wd-rpg .wd-goal { display: none; order: 10; }
   #world-app.wd-rpg .wd-goal.done { display: block; }
   #world-app.wd-rpg .wd-hud #wd-achbtn { order: 5; margin-left: auto; font-size: 0.68rem; padding: 0.05rem 0.5rem; line-height: 1.5; }
@@ -859,10 +860,40 @@ body.wd-game-active #i2p-bnpop-scrim {
   /* Kolom kanan setinggi peta: feed mengisi sisa (scroll dalam), bukan kotak capped */
   #world-app.wd-rpg #wd-feed { max-height: none; min-height: 200px; }
   #world-app.wd-rpg .wd-screen { grid-column: 1; grid-row: 2 / span 4; align-self: stretch; width: 100%; min-height: 0; }
-  #world-app.wd-rpg .wd-dlg-tabs { grid-column: 2; grid-row: 2; margin: 0; }
+  #world-app.wd-rpg .wd-dlg-tabs { grid-column: 2; grid-row: 2; margin: 0; height: 40px; align-items: stretch; gap: 0; }
+  /* Segmented Dialog|Jurnal + tombol ikon ❓, selaras toggle mode. */
+  #world-app.wd-rpg .wd-dlg-tabs [data-ch] {
+    min-height: 0; height: 40px; margin: 0; border-radius: 0;
+    background: var(--th-surface, #17121f);
+    color: var(--th-text, #e8e2d5);
+    border: 1px solid var(--th-border, #3a3348);
+    opacity: 0.55;
+  }
+  #world-app.wd-rpg .wd-dlg-tabs [data-ch='dialog'] { border-radius: 8px 0 0 8px; }
+  #world-app.wd-rpg .wd-dlg-tabs [data-ch='journal'] { border-radius: 0 8px 8px 0; margin-left: -1px; }
+  #world-app.wd-rpg .wd-dlg-tabs [data-ch].on { opacity: 1; }
+  #world-app.wd-rpg .wd-dlg-tabs [data-helpbtn] {
+    min-width: 0; width: 40px; height: 40px; min-height: 0; margin-left: auto; flex: 0 0 auto;
+    border-radius: 8px; font-size: 0.9rem; line-height: 1;
+    background: var(--th-surface, #17121f);
+    color: var(--th-text, #e8e2d5);
+    border: 1px solid var(--th-border, #3a3348);
+  }
+  #world-app.wd-rpg .wd-dlg-tabs [data-helpbtn]:hover { border-color: var(--th-accent, #7c5cd6); }
+  #world-app.wd-rpg .wd-dlg-tabs button:focus-visible { outline: 2px solid var(--th-accent, #7c5cd6); outline-offset: 2px; }
   #world-app.wd-rpg #wd-battlelog { grid-column: 2; grid-row: 3; margin: 0; max-height: 88px; }
   #world-app.wd-rpg #wd-feed { grid-column: 2; grid-row: 4; margin: 0; min-height: 0; }
   #world-app.wd-rpg .wd-stickfoot { grid-column: 2; grid-row: 5; margin: 0; padding-bottom: 0.55rem; max-height: none; }
+  /* Bar aksi non-battle: penuhi lebar — Explore/Rest rata, Status kompak. */
+  #world-app.wd-rpg:not(.is-battle) .wd-actionbar { display: flex; gap: 0.4rem; }
+  #world-app.wd-rpg:not(.is-battle) .wd-actionbar .wd-abtn { min-height: 44px; }
+  #world-app.wd-rpg:not(.is-battle) #wd-act-gather,
+  #world-app.wd-rpg:not(.is-battle) #wd-act-sleep { flex: 1 1 0; min-width: 0; }
+  #world-app.wd-rpg:not(.is-battle) #wd-act-status { flex: 0 0 auto; }
+  #world-app.wd-rpg #wd-act-status::after { content: " Status"; }
+  /* Battle: cegah meluap di kolom sempit (label Status ikut tampil). */
+  #world-app.wd-rpg.is-battle .wd-actionbar > * { min-width: 0; }
+  #world-app.wd-rpg .wd-nearby { margin-top: 0.4rem; }
   #world-app.wd-rpg .wd-stickfoot { padding-bottom: 0.55rem; }
   #world-app.wd-rpg #wd-pane-party:not([hidden]),
   #world-app.wd-rpg #wd-pane-world:not([hidden]),
