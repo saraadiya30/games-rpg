@@ -872,6 +872,12 @@ body.wd-game-active #i2p-bnpop-scrim {
   #world-app.wd-rpg .wd-dlg-tabs [data-ch='dialog'] { border-radius: 8px 0 0 8px; }
   #world-app.wd-rpg .wd-dlg-tabs [data-ch='journal'] { border-radius: 0 8px 8px 0; margin-left: -1px; }
   #world-app.wd-rpg .wd-dlg-tabs [data-ch].on { opacity: 1; }
+  #world-app.wd-rpg .wd-dlg-tabs [data-ch].on {
+    background: var(--th-accent, #7c5cd6);
+    border-color: var(--th-accent, #7c5cd6);
+    color: var(--th-accent-text, #fff);
+    opacity: 1;
+  }
   #world-app.wd-rpg .wd-dlg-tabs [data-helpbtn] {
     min-width: 0; width: 40px; height: 40px; min-height: 0; margin-left: auto; flex: 0 0 auto;
     border-radius: 8px; font-size: 0.9rem; line-height: 1;
